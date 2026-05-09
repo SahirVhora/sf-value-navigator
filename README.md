@@ -65,7 +65,7 @@ No forms. No logins. No back-end. Just answers.
 **Sahir Vhora** — SAP SuccessFactors Data Lead & Solution Architect  
 19 years of HR transformation delivery across IKEA, Saudi Aramco, Vodafone, and American Airlines.
 
-[LinkedIn](https://www.linkedin.com/in/sahirvhora)
+[LinkedIn](https://www.linkedin.com/in/sahir-vhora-9242439)
 
 ---
 
