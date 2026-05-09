@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SAP SuccessFactors Value Navigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --bg-deep: #0D1B2A;
+  --bg-mid: #102841;
+  --bg-deeper: #07111B;
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --bg-glass-hover: rgba(255, 255, 255, 0.07);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-glass-strong: rgba(255, 255, 255, 0.16);
+  --primary: #0070F3;
+  --primary-soft: #2D8AFF;
+  --primary-glow: rgba(0, 112, 243, 0.35);
+  --accent: #F5A623;
+  --accent-soft: #FFC04A;
+  --accent-glow: rgba(245, 166, 35, 0.35);
+  --success: #00D68F;
+  --text-primary: #F0F4F8;
+  --text-secondary: #A8B5C7;
+  --text-muted: #6B7B91;
+  --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 32px rgba(0, 112, 243, 0.25);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 180ms;
+  --duration-mid: 320ms;
+  --duration-slow: 600ms;
+}
+
+/* ============================================================
+   RESET + GLOBALS
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; min-height: 100%; }
+body {
+  font-family: 'Sora', system-ui, -apple-system, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-weight: 400;
+  line-height: 1.55;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+ul { list-style: none; }
+.mono { font-family: 'DM Mono', ui-monospace, monospace; }
+
+/* ============================================================
+   ANIMATED GRADIENT MESH BACKGROUND
+   ============================================================ */
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(ellipse 60% 50% at 18% 22%, rgba(0, 112, 243, 0.28), transparent 60%),
+    radial-gradient(ellipse 50% 60% at 82% 78%, rgba(245, 166, 35, 0.16), transparent 60%),
+    radial-gradient(ellipse 70% 40% at 50% 100%, rgba(0, 112, 243, 0.18), transparent 70%),
+    var(--bg-deep);
+  animation: meshPulse 16s ease-in-out infinite;
+}
+.mesh-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%);
+  pointer-events: none;
+}
+@keyframes meshPulse {
+  0%, 100% { filter: hue-rotate(0deg) brightness(1); }
+  50%      { filter: hue-rotate(8deg) brightness(1.08); }
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 28px 80px;
+  position: relative;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.brand-mark {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary) 0%, #0050B3 100%);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 18px var(--primary-glow);
+  position: relative;
+  overflow: hidden;
+}
+.brand-mark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 50%);
+}
+.brand-mark svg { position: relative; z-index: 1; }
+.brand-name {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+.brand-tag {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   SCREEN TRANSITIONS
+   ============================================================ */
+.screen {
+  display: none;
+  animation: fadeSlide var(--duration-slow) var(--ease-out);
+}
+.screen.active { display: block; }
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   HERO + HEADERS
+   ============================================================ */
+.hero {
+  text-align: center;
+  padding: 36px 0 56px;
+}
+.hero h1 {
+  font-size: clamp(2.4rem, 1.4rem + 3.6vw, 4.4rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  background: linear-gradient(180deg, #FFFFFF 0%, #B5C5DA 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 18px;
+}
+.hero .accent-word {
+  background: linear-gradient(180deg, var(--accent-soft) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p {
+  font-size: clamp(1rem, 0.85rem + 0.4vw, 1.18rem);
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin: 0 auto 8px;
+  font-weight: 300;
+}
+.hero .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  backdrop-filter: blur(12px);
+}
+.hero .pill::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 10px var(--success);
+  animation: livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+.section-eyebrow {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.section-title {
+  font-size: clamp(1.6rem, 1.1rem + 1.4vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-bottom: 6px;
+}
+.section-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.02rem;
+  font-weight: 300;
+  margin-bottom: 36px;
+}
+
+/* ============================================================
+   INDUSTRY GRID
+   ============================================================ */
+.industry-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+.industry-card {
+  position: relative;
+  padding: 28px 22px 24px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  cursor: pointer;
+  transition: all var(--duration-mid) var(--ease-out);
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
+}
+.industry-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(0, 112, 243, 0.12) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity var(--duration-mid) var(--ease-out);
+  pointer-events: none;
+}
+.industry-card:hover {
+  transform: translateY(-4px);
+  background: var(--bg-glass-hover);
+  border-color: var(--accent);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--accent-glow);
+}
+.industry-card:hover::before { opacity: 1; }
+.industry-card:hover .industry-cta { opacity: 1; transform: translateX(0); }
+.industry-icon {
+  font-size: 32px;
+  margin-bottom: 14px;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+  display: inline-block;
+}
+.industry-name {
+  font-weight: 600;
+  font-size: 1.04rem;
+  letter-spacing: -0.005em;
+  margin-bottom: 8px;
+  display: block;
+}
+.industry-teaser {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  font-weight: 300;
+  line-height: 1.45;
+  margin-bottom: 18px;
+  min-height: 2.6em;
+}
+.industry-cta {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.55;
+  transform: translateX(-4px);
+  transition: all var(--duration-mid) var(--ease-out);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+
+/* ============================================================
+   SCREEN 2 — PAIN POINTS
+   ============================================================ */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-glass);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 28px;
+  transition: all var(--duration-fast) var(--ease-out);
+  backdrop-filter: blur(8px);
+}
+.back-btn:hover {
+  border-color: var(--border-glass-strong);
+  color: var(--text-primary);
+  transform: translateX(-2px);
+}
+
+.pain-point-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 110px;
+}
+.pain-chip {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 22px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(10px);
+  text-align: left;
+  font-size: 0.96rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--text-primary);
+  transition: all var(--duration-mid) var(--ease-out);
+  overflow: hidden;
+  width: 100%;
+}
+.pain-chip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--primary) 0%, #0050B3 100%);
+  opacity: 0;
+  transition: opacity var(--duration-mid) var(--ease-out);
+  pointer-events: none;
+  z-index: 0;
+}
+.pain-chip > * { position: relative; z-index: 1; }
+.pain-chip:hover {
+  border-color: var(--border-glass-strong);
+  background: var(--bg-glass-hover);
+  transform: translateY(-1px);
+}
+.pain-chip.selected {
+  border-color: var(--primary);
+  color: white;
+  box-shadow: var(--shadow-glow);
+}
+.pain-chip.selected::before { opacity: 1; }
+.pain-checkbox {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--duration-mid) var(--ease-out);
+  margin-top: 1px;
+}
+.pain-chip.selected .pain-checkbox {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.pain-checkbox svg {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all var(--duration-mid) var(--ease-out);
+}
+.pain-chip.selected .pain-checkbox svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Sticky CTA bar */
+.cta-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 14px 14px 24px;
+  background: rgba(13, 27, 42, 0.92);
+  border: 1px solid var(--border-glass-strong);
+  border-radius: 999px;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-card), 0 0 60px rgba(245, 166, 35, 0.15);
+  transition: transform var(--duration-mid) var(--ease-out);
+}
+.cta-bar.visible { transform: translateX(-50%) translateY(0); }
+.cta-bar-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+}
+.cta-bar-count strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: linear-gradient(180deg, var(--accent-soft) 0%, var(--accent) 100%);
+  color: #1A0F02;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 999px;
+  letter-spacing: 0.005em;
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: 0 6px 20px rgba(245, 166, 35, 0.4);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px rgba(245, 166, 35, 0.55);
+  filter: brightness(1.05);
+}
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-glass-strong);
+  transition: all var(--duration-fast) var(--ease-out);
+  backdrop-filter: blur(10px);
+}
+.btn-secondary:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--accent);
+}
+
+/* ============================================================
+   SCREEN 3 — RESULTS
+   ============================================================ */
+.results-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 36px;
+}
+.results-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 28px;
+  margin-bottom: 40px;
+}
+
+/* Module cards (left) */
+.modules-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.module-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 22px 24px;
+  backdrop-filter: blur(12px);
+  transition: all var(--duration-mid) var(--ease-out);
+  opacity: 0;
+  transform: translateY(12px);
+  animation: cardReveal var(--duration-slow) var(--ease-out) forwards;
+  position: relative;
+  overflow: hidden;
+}
+.module-card::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--primary), var(--accent));
+  opacity: 0.7;
+}
+.module-card:hover {
+  border-color: var(--border-glass-strong);
+  background: var(--bg-glass-hover);
+}
+@keyframes cardReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+.module-rank {
+  position: absolute;
+  top: 18px; right: 22px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+.module-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.module-icon {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0,112,243,0.18), rgba(0,112,243,0.04));
+  border: 1px solid rgba(0, 112, 243, 0.3);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary-soft);
+}
+.module-meta { flex: 1; min-width: 0; }
+.module-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  margin-bottom: 4px;
+}
+.module-coverage {
+  font-family: 'DM Mono', monospace;
+  font-size: 11.5px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+.module-coverage strong { color: var(--accent-soft); font-weight: 600; }
+.module-value {
+  color: var(--text-secondary);
+  font-size: 0.93rem;
+  font-weight: 300;
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+.module-roi {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  background: rgba(245, 166, 35, 0.1);
+  border: 1px solid rgba(245, 166, 35, 0.25);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--accent-soft);
+  font-weight: 500;
+}
+.module-roi svg { flex-shrink: 0; }
+.module-story-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 6px 13px;
+  background: rgba(0, 112, 243, 0.08);
+  border: 1px solid rgba(0, 112, 243, 0.25);
+  border-radius: 999px;
+  font-size: 11.5px;
+  color: var(--primary-soft);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--duration-fast) var(--ease-out);
+  width: fit-content;
+}
+.module-story-link:hover {
+  background: rgba(0, 112, 243, 0.16);
+  border-color: rgba(0, 112, 243, 0.5);
+  color: white;
+}
+.module-story-link svg { flex-shrink: 0; }
+.module-pain-toggle {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-glass);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 100%;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.module-pain-toggle:hover { color: var(--text-primary); }
+.module-pain-toggle .chev {
+  transition: transform var(--duration-mid) var(--ease-out);
+}
+.module-card.expanded .module-pain-toggle .chev { transform: rotate(180deg); }
+.module-pain-list {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--duration-mid) var(--ease-out);
+}
+.module-card.expanded .module-pain-list { max-height: 800px; }
+.module-pain-list ul {
+  padding-top: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.module-pain-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  font-weight: 300;
+  line-height: 1.5;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.025);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.module-pain-list li::before {
+  content: "→";
+  color: var(--accent);
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+/* Right column — business case */
+.case-panel {
+  position: sticky;
+  top: 24px;
+  background: linear-gradient(160deg, rgba(0,112,243,0.08) 0%, rgba(245,166,35,0.04) 100%), var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 26px 24px;
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: fit-content;
+}
+.case-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.stat-card {
+  padding: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+}
+.stat-card.span-2 { grid-column: 1 / -1; }
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  background: linear-gradient(180deg, #FFFFFF 0%, #A8B5C7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: block;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.stat-value.gold {
+  background: linear-gradient(180deg, var(--accent-soft) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.stat-label {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  font-weight: 400;
+  line-height: 1.35;
+}
+.case-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+.quick-wins {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.quick-win {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  font-weight: 300;
+  line-height: 1.5;
+}
+.quick-win-dot {
+  flex-shrink: 0;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 214, 143, 0.12);
+  border: 1px solid rgba(0, 214, 143, 0.4);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--success);
+  margin-top: 1px;
+}
+
+/* Implementation timeline */
+.timeline {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-top: 6px;
+}
+.phase {
+  flex: 1;
+  padding: 12px 10px;
+  text-align: center;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-glass);
+  border-right: 0;
+  position: relative;
+}
+.phase:first-child { border-radius: 10px 0 0 10px; }
+.phase:last-child { border-radius: 0 10px 10px 0; border-right: 1px solid var(--border-glass); }
+.phase-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+.phase-name {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 4px 0 2px;
+}
+.phase-time {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+}
+
+/* Mapping table */
+.mapping-section { margin-top: 16px; }
+.mapping-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+.mapping-section p.caption {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  margin-bottom: 18px;
+  font-weight: 300;
+}
+.mapping-table-wrap {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+.mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.mapping-table thead {
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--border-glass);
+}
+.mapping-table th {
+  text-align: left;
+  padding: 14px 18px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.mapping-table th:hover { color: var(--text-primary); }
+.mapping-table th .sort-arrow { opacity: 0.4; margin-left: 4px; }
+.mapping-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: top;
+}
+.mapping-table tbody tr {
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.mapping-table tbody tr:hover { background: rgba(0, 112, 243, 0.06); }
+.mapping-table tbody tr:last-child td { border-bottom: 0; }
+.mapping-table .col-pain { color: var(--text-primary); font-weight: 400; max-width: 360px; }
+.mapping-table .col-module { color: var(--primary-soft); font-weight: 500; white-space: nowrap; }
+.mapping-table .col-impact { color: var(--text-secondary); font-weight: 300; font-size: 0.86rem; }
+.mapping-table .col-go-live {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.results-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@keyframes floatPulse {
+  0%, 100% { box-shadow: 0 10px 30px rgba(245, 166, 35, 0.4), 0 0 0 0 rgba(245, 166, 35, 0.4); }
+  50%      { box-shadow: 0 10px 30px rgba(245, 166, 35, 0.4), 0 0 0 14px rgba(245, 166, 35, 0); }
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 17, 27, 0.78);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+  animation: fadeIn var(--duration-mid) var(--ease-out);
+}
+.modal-overlay.visible { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: linear-gradient(180deg, #15263A 0%, var(--bg-deep) 100%);
+  border: 1px solid var(--border-glass-strong);
+  border-radius: var(--radius-lg);
+  padding: 36px 36px 30px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: var(--shadow-card), 0 0 80px rgba(0, 112, 243, 0.18);
+  animation: modalRise var(--duration-mid) var(--ease-out);
+  position: relative;
+}
+@keyframes modalRise {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-close {
+  position: absolute;
+  top: 18px; right: 18px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.modal-close:hover { background: var(--bg-glass-hover); color: var(--text-primary); }
+.modal-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.modal h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-bottom: 8px;
+}
+.modal p.lead {
+  color: var(--text-secondary);
+  font-weight: 300;
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.form-field { margin-bottom: 12px; }
+.form-field label {
+  display: block;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.form-field textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  background: rgba(0,0,0,0.35);
+}
+.modal-submit {
+  width: 100%;
+  padding: 14px;
+  margin-top: 6px;
+  background: linear-gradient(180deg, var(--primary-soft) 0%, var(--primary) 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 12px;
+  letter-spacing: 0.005em;
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: 0 6px 20px var(--primary-glow);
+}
+.modal-submit:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+}
+.modal-confirmation {
+  text-align: center;
+  padding: 20px 0;
+}
+.confirmation-icon {
+  width: 64px; height: 64px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: rgba(0, 214, 143, 0.12);
+  border: 1px solid rgba(0, 214, 143, 0.4);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--success);
+  animation: checkPop 500ms var(--ease-out);
+}
+@keyframes checkPop {
+  from { transform: scale(0.4); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================================
+   FOOTER MARK
+   ============================================================ */
+.foot-mark {
+  margin-top: 60px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-glass);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .industry-grid { grid-template-columns: repeat(3, 1fr); }
+  .results-grid { grid-template-columns: 1fr; }
+  .case-panel { position: static; }
+}
+@media (max-width: 720px) {
+  .app { padding: 24px 18px 100px; }
+  .industry-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .pain-point-grid { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .timeline { flex-direction: column; }
+  .phase { border-right: 1px solid var(--border-glass); border-bottom: 0; }
+  .phase:first-child { border-radius: 10px 10px 0 0; }
+  .phase:last-child { border-radius: 0 0 10px 10px; }
+  .mapping-table thead { display: none; }
+  .mapping-table tr {
+    display: flex; flex-direction: column;
+    border-bottom: 1px solid var(--border-glass);
+    padding: 6px 0;
+  }
+  .mapping-table td { border: 0; padding: 6px 14px; }
+  .mapping-table .col-pain { font-weight: 500; padding-top: 10px; }
+  .float-cta { bottom: 96px; right: 18px; padding: 12px 18px; font-size: 13px; }
+  .cta-bar { left: 18px; right: 18px; transform: translateY(120%); padding: 10px 12px 10px 18px; }
+  .cta-bar.visible { transform: translateY(0); }
+  .results-header { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 420px) {
+  .industry-grid { grid-template-columns: 1fr; }
+}
+
+/* Print */
+@media print {
+  .mesh-bg, .float-cta, .cta-bar, .back-btn, .results-actions, .foot-mark { display: none !important; }
+  body { background: white; color: #111; }
+  .module-card, .case-panel, .mapping-table-wrap { background: white; border: 1px solid #ddd; box-shadow: none; }
+  .module-card.expanded .module-pain-list { max-height: none; }
+  .stat-value { color: #111 !important; -webkit-text-fill-color: #111 !important; }
+  .hero h1, .section-title { color: #111 !important; -webkit-text-fill-color: #111 !important; }
+}
+</style>
+</head>
+<body>
+<div class="mesh-bg"></div>
+
+<div class="app">
+
+  <!-- Brand -->
+  <div class="brand">
+    <div class="brand-mark">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 17l6-6 4 4 8-8"/>
+        <path d="M14 7h7v7"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-name">SuccessFactors Value Navigator</div>
+      <div class="brand-tag">Consultant Edition · v1.0</div>
+    </div>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- SCREEN 1: Industry Selector                             -->
+  <!-- ====================================================== -->
+  <section id="screen-1" class="screen active">
+    <div class="hero">
+      <span class="pill">Live · Industry Diagnostic</span>
+      <h1>Find your <span class="accent-word">HR transformation</span> roadmap<br>in 3 minutes</h1>
+      <p>SAP SuccessFactors maps directly to the pain points your HR organisation feels every day. Pick your industry to begin.</p>
+    </div>
+
+    <span class="section-eyebrow">Step 01 / 03</span>
+    <h2 class="section-title">Select your industry</h2>
+    <p class="section-subtitle">Each industry surfaces the eight pain points we hear most often from HR leaders.</p>
+
+    <div class="industry-grid" id="industryGrid"></div>
+
+    <div class="foot-mark">
+      <span>SUCCESSFACTORS · VALUE NAVIGATOR</span>
+      <span>BUILT FOR HR LEADERS · 2026</span>
+    </div>
+  </section>
+
+  <!-- ====================================================== -->
+  <!-- SCREEN 2: Pain Point Selector                           -->
+  <!-- ====================================================== -->
+  <section id="screen-2" class="screen">
+    <button class="back-btn" data-nav="1">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+      </svg>
+      Change industry
+    </button>
+
+    <span class="section-eyebrow">Step 02 / 03</span>
+    <h2 class="section-title" id="painHeader">What keeps your HR team up at night?</h2>
+    <p class="section-subtitle">Select every pain point that resonates. The more you select, the more precise your roadmap.</p>
+
+    <div class="pain-point-grid" id="painGrid"></div>
+  </section>
+
+  <!-- ====================================================== -->
+  <!-- SCREEN 3: Results Dashboard                             -->
+  <!-- ====================================================== -->
+  <section id="screen-3" class="screen">
+    <button class="back-btn" data-nav="2">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+      </svg>
+      Adjust pain points
+    </button>
+
+    <div class="results-header">
+      <div>
+        <span class="section-eyebrow">Step 03 / 03 · Roadmap</span>
+        <h2 class="section-title">Your SAP SuccessFactors Roadmap</h2>
+        <p class="section-subtitle" id="resultsSubtitle"></p>
+      </div>
+    </div>
+
+    <div class="results-grid">
+      <!-- Left: modules -->
+      <div>
+        <h3 style="margin-bottom: 14px; font-size: 1.1rem; font-weight: 600;">Recommended modules · priority ranked</h3>
+        <div class="modules-stack" id="modulesStack"></div>
+      </div>
+
+      <!-- Right: business case -->
+      <aside class="case-panel">
+        <div>
+          <div class="case-title">Your Business Case</div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <span class="stat-value" id="statModules">0</span>
+            <span class="stat-label">Modules addressing your needs</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value gold" id="statAdmin">0%</span>
+            <span class="stat-label">Est. HR admin time saved</span>
+          </div>
+          <div class="stat-card span-2">
+            <span class="stat-value" id="statRisk">0</span>
+            <span class="stat-label">Compliance &amp; risk areas covered</span>
+          </div>
+        </div>
+
+        <div class="case-section">
+          <h4>Key quick wins</h4>
+          <div class="quick-wins" id="quickWins"></div>
+        </div>
+
+        <div class="case-section">
+          <h4>Implementation approach</h4>
+          <div class="timeline">
+            <div class="phase">
+              <div class="phase-num">01</div>
+              <div class="phase-name">Discover</div>
+              <div class="phase-time">4–6 wks</div>
+            </div>
+            <div class="phase">
+              <div class="phase-num">02</div>
+              <div class="phase-name">Deploy</div>
+              <div class="phase-time">3–6 mo</div>
+            </div>
+            <div class="phase">
+              <div class="phase-num">03</div>
+              <div class="phase-name">Optimise</div>
+              <div class="phase-time">Ongoing</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Mapping table -->
+    <div class="mapping-section">
+      <h3>Pain point → module mapping</h3>
+      <p class="caption">Sortable view of every pain point you selected and the SuccessFactors module that addresses it.</p>
+      <div class="mapping-table-wrap">
+        <table class="mapping-table" id="mappingTable">
+          <thead>
+            <tr>
+              <th data-sort="pain">Pain point <span class="sort-arrow">↕</span></th>
+              <th data-sort="module">SF module <span class="sort-arrow">↕</span></th>
+              <th data-sort="impact">Business impact <span class="sort-arrow">↕</span></th>
+              <th data-sort="goLive">Typical go-live <span class="sort-arrow">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="mappingTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn-secondary" id="restartBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>
+        </svg>
+        Start over
+      </button>
+      <button class="btn-secondary" id="downloadBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download summary
+      </button>
+    </div>
+
+    <div class="foot-mark">
+      <span>YOUR ROADMAP · GENERATED <span id="genStamp"></span></span>
+      <span>SUCCESSFACTORS · VALUE NAVIGATOR</span>
+    </div>
+  </section>
+</div>
+
+<!-- Sticky pain-point CTA bar (Screen 2) -->
+<div class="cta-bar" id="ctaBar">
+  <span class="cta-bar-count"><strong id="ctaCount">0</strong> pain points selected</span>
+  <button class="btn-primary" id="seeRoadmapBtn">
+    Show me how SF solves these
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+    </svg>
+  </button>
+</div>
+
+
+<script>
+/* ============================================================
+   DATA — Industries
+   ============================================================ */
+const INDUSTRIES = [
+  { id: 'manufacturing',  icon: '🏭', name: 'Manufacturing',                    teaser: 'Managing shift workers, skills gaps, and union compliance' },
+  { id: 'healthcare',     icon: '🏥', name: 'Healthcare & Life Sciences',       teaser: 'Credentialing, compliance, and clinical workforce burnout' },
+  { id: 'financial',      icon: '🏦', name: 'Financial Services & Banking',    teaser: 'Regulatory headcount reporting and talent retention' },
+  { id: 'retail',         icon: '🛒', name: 'Retail & Consumer Goods',          teaser: 'High turnover, seasonal hiring, and distributed workforce' },
+  { id: 'energy',         icon: '⚡', name: 'Energy & Utilities',                teaser: 'Field workforce safety compliance and succession for an aging workforce' },
+  { id: 'construction',   icon: '🏗️', name: 'Construction & Engineering',      teaser: 'Project-based hiring, certifications, and subcontractor management' },
+  { id: 'transport',      icon: '✈️', name: 'Transportation & Logistics',      teaser: 'Driver licensing compliance, remote workers, global payroll' },
+  { id: 'education',      icon: '🎓', name: 'Education & Public Sector',       teaser: 'Position budgeting, tenure tracking, and workforce planning' },
+  { id: 'pharma',         icon: '💊', name: 'Pharmaceuticals & Biotech',       teaser: 'GxP compliance, global mobility, and talent pipeline' },
+  { id: 'tech',           icon: '🖥️', name: 'Technology & Software',           teaser: 'Remote-first workforce, equity comp, and hyper-growth scaling' },
+  { id: 'hospitality',    icon: '🏨', name: 'Hospitality & Travel',            teaser: 'Seasonal staffing, multi-property management, and service training' },
+  { id: 'professional',   icon: '🌍', name: 'Professional Services & Consulting', teaser: 'Utilisation tracking, skills marketplace, and project staffing' }
+];
+
+/* ============================================================
+   DATA — SF modules
+   ============================================================ */
+const MODULES = {
+  ec: {
+    name: 'Employee Central',
+    short: 'Core HR',
+    icon: svgIcon('users'),
+    value: 'The single source of truth for your global workforce. Org structure, position management, and unified employee data — finally without silos.',
+    roi: 'Up to 40% reduction in HR admin workload',
+    goLive: '4–6 mo',
+    storySearch: 'successfactors employee central'
+  },
+  ecp: {
+    name: 'Employee Central Payroll',
+    short: 'Global Payroll',
+    icon: svgIcon('payroll'),
+    value: 'Localised, compliant payroll across every country you operate in. One platform, country-specific rules, zero spreadsheet reconciliation.',
+    roi: 'Payroll error rates reduced by up to 67%',
+    goLive: '6–9 mo / country',
+    storySearch: 'successfactors payroll'
+  },
+  rec: {
+    name: 'Recruiting (RCM + RMK)',
+    short: 'ATS & Marketing',
+    icon: svgIcon('search'),
+    value: 'A modern applicant tracking system plus recruitment marketing — purpose-built for the volume, speed, and candidate experience HR leaders need today.',
+    roi: '30–50% faster time-to-hire',
+    goLive: '3–4 mo',
+    storySearch: 'successfactors recruiting'
+  },
+  onb: {
+    name: 'Onboarding',
+    short: 'New Hire Journeys',
+    icon: svgIcon('rocket'),
+    value: 'Structured pre-boarding and onboarding journeys that get new hires productive faster and ensure compliance tasks are never missed.',
+    roi: '2× faster new hire time-to-productivity',
+    goLive: '2–3 mo',
+    storySearch: 'successfactors onboarding'
+  },
+  perf: {
+    name: 'Performance & Goals',
+    short: 'Continuous Performance',
+    icon: svgIcon('chart'),
+    value: 'Continuous feedback, OKR-style goals, and consistent calibration. Move performance management from annual ritual to ongoing dialogue.',
+    roi: '22% improvement in engagement scores',
+    goLive: '3–4 mo',
+    storySearch: 'successfactors performance management'
+  },
+  comp: {
+    name: 'Compensation',
+    short: 'Pay Planning',
+    icon: svgIcon('coin'),
+    value: 'Bonus, salary, equity, and pay-equity analysis in one workflow. Drive consistency, defensibility, and budget control across every business unit.',
+    roi: 'Pay equity gaps identified and closed in <90 days',
+    goLive: '3–5 mo',
+    storySearch: 'successfactors compensation'
+  },
+  succ: {
+    name: 'Succession & Development',
+    short: 'Talent Pipeline',
+    icon: svgIcon('tree'),
+    value: 'Talent pools, 9-box reviews, and structured leadership pipelines. See who is ready next — before the role goes external.',
+    roi: '3× more internal promotions vs external hires',
+    goLive: '3–4 mo',
+    storySearch: 'successfactors succession planning'
+  },
+  learn: {
+    name: 'Learning',
+    short: 'LMS & Compliance',
+    icon: svgIcon('book'),
+    value: 'A modern LMS that handles compliance training, certifications, and skills development with audit-ready records and high completion rates.',
+    roi: 'Compliance training completion 60% → 95%+',
+    goLive: '3–5 mo',
+    storySearch: 'successfactors learning management'
+  },
+  wfa: {
+    name: 'Workforce Analytics & Planning',
+    short: 'People Analytics',
+    icon: svgIcon('graph'),
+    value: 'Predictive headcount planning, workforce KPIs, and scenario modelling. Stop reporting on the past — start planning the future.',
+    roi: 'Headcount forecasting accuracy improved by 35%',
+    goLive: '3–6 mo',
+    storySearch: 'successfactors workforce analytics planning'
+  },
+  time: {
+    name: 'Time & Attendance',
+    short: 'Schedule & Timesheets',
+    icon: svgIcon('clock'),
+    value: 'Scheduling, time capture, and overtime control — natively integrated with payroll and Employee Central. Cut overtime costs and compliance risk.',
+    roi: 'Overtime costs reduced by 18–25%',
+    goLive: '3–4 mo',
+    storySearch: 'successfactors time attendance'
+  },
+  skills: {
+    name: 'Skills & Talent Intelligence',
+    short: 'AI Skills Layer',
+    icon: svgIcon('sparkle'),
+    value: 'AI-inferred skills, internal mobility marketplace, and dynamic talent matching. Turn your workforce into a transparent, accessible skills graph.',
+    roi: 'Internal mobility increased by 40%',
+    goLive: '2–4 mo',
+    storySearch: 'successfactors talent intelligence skills'
+  }
+};
+
+/* ============================================================
+   DATA — Pain points per industry + module mapping
+   Each pain point: { text, modules: [moduleKey, ...] in priority order, impact: short impact phrase }
+   ============================================================ */
+const PAIN_POINTS = {
+  manufacturing: [
+    { text: "How do we track certifications and safety training for 5,000+ plant workers?",          modules: ['learn', 'wfa'],           impact: 'Audit-ready compliance' },
+    { text: "Our shift scheduling is done in spreadsheets — how do we fix this?",                    modules: ['time', 'ec'],             impact: 'Schedule automation' },
+    { text: "We can't see which skills we're missing until a line stops production",                 modules: ['skills', 'wfa'],          impact: 'Predictive skills coverage' },
+    { text: "Succession planning for our retiring senior engineers is non-existent",                 modules: ['succ', 'skills'],         impact: 'Critical-role pipeline' },
+    { text: "HR data lives in 6 different legacy systems — nothing talks to each other",             modules: ['ec', 'wfa'],              impact: 'Single source of truth' },
+    { text: "We pay overtime we could avoid if we could see workforce availability",                 modules: ['time', 'wfa'],            impact: 'Overtime spend cut' },
+    { text: "Onboarding a new operator takes 6 weeks — it should take 2",                            modules: ['onb', 'learn'],           impact: 'Faster ramp-up' },
+    { text: "Union compliance reporting takes our team 3 days every month",                          modules: ['ec', 'wfa', 'ecp'],       impact: 'Reporting on demand' },
+    { text: "We recruit externally for roles that existing workers could fill with upskilling",      modules: ['skills', 'learn', 'succ'], impact: 'Internal talent reuse' },
+    { text: "Absenteeism patterns are invisible until they become a crisis",                         modules: ['wfa', 'time'],            impact: 'Absence intelligence' },
+    { text: "Our manufacturing sites in different countries can't share HR best practices",          modules: ['ec', 'learn'],            impact: 'Global HR standardisation' },
+    { text: "New hire attrition in the first 90 days is costing us more than we realise",           modules: ['onb', 'perf'],            impact: 'Early retention' }
+  ],
+  healthcare: [
+    { text: "Nurse credentialing and license renewals fall through the cracks",                      modules: ['learn', 'ec'],            impact: 'Zero lapsed licences' },
+    { text: "Agency staff costs are 40% of our labour budget — how do we reduce this?",              modules: ['wfa', 'time'],            impact: 'Agency spend control' },
+    { text: "Burnout and turnover among clinical staff is at an all-time high",                      modules: ['perf', 'succ'],           impact: 'Retention uplift' },
+    { text: "Our HR system can't handle the complexity of job families and pay bands",               modules: ['ec', 'comp'],             impact: 'Pay band integrity' },
+    { text: "Mandatory training compliance is tracked on paper — we can't audit it",                 modules: ['learn'],                  impact: 'Audit-ready training' },
+    { text: "We have no visibility into future staffing needs by department",                        modules: ['wfa'],                    impact: 'Predictive staffing' },
+    { text: "Onboarding new clinicians takes too long and delays patient care",                      modules: ['onb', 'learn'],           impact: 'Faster credentialing' },
+    { text: "We can't do fair and consistent performance reviews across 12 sites",                   modules: ['perf'],                   impact: 'Calibrated reviews' },
+    { text: "Bank shifts and flexible workers aren't visible in our planning tools",                 modules: ['time', 'wfa'],            impact: 'Flexible workforce visibility' },
+    { text: "We can't identify nurses ready for charge nurse or management roles",                   modules: ['succ', 'skills'],         impact: 'Clinical leadership pipeline' },
+    { text: "Recruiting for specialist clinical roles takes 4–6 months on average",                 modules: ['rec', 'skills'],          impact: 'Specialist hiring speed' }
+  ],
+  financial: [
+    { text: "Regulators ask for headcount data we can't produce quickly or accurately",              modules: ['ec', 'wfa'],              impact: 'Same-day reporting' },
+    { text: "High-performers leave before we even know they're at risk",                             modules: ['perf', 'wfa', 'succ'],    impact: 'Flight-risk insights' },
+    { text: "Bonus and compensation processes are manual and error-prone",                           modules: ['comp'],                   impact: 'Defensible comp' },
+    { text: "We have no global view of our workforce across 30 countries",                           modules: ['ec', 'wfa'],              impact: 'Global HR view' },
+    { text: "Diversity and pay equity reporting is a manual quarterly nightmare",                    modules: ['comp', 'wfa'],            impact: 'Continuous DEI insight' },
+    { text: "Our talent pipeline for leadership roles is empty",                                     modules: ['succ', 'skills'],         impact: 'Leadership pipeline' },
+    { text: "Onboarding in regulated roles takes 3 months — can we compress this?",                  modules: ['onb', 'learn'],           impact: 'Compliant fast-onboard' },
+    { text: "Performance review calibration across business units is inconsistent",                  modules: ['perf'],                   impact: 'Cross-BU calibration' },
+    { text: "We can't track whether mandatory compliance training has been completed globally",      modules: ['learn'],                  impact: 'Global compliance assurance' },
+    { text: "Our internal job mobility is poor — top talent stagnates or leaves",                    modules: ['skills', 'succ'],         impact: 'Internal mobility' },
+    { text: "Payroll errors in multiple countries create audit findings and remediation cost",       modules: ['ecp'],                    impact: 'Multi-country payroll accuracy' },
+    { text: "We hire for skills we already have internally but can't see",                           modules: ['skills', 'wfa'],          impact: 'Skills visibility' }
+  ],
+  retail: [
+    { text: "We hire 10,000 seasonal workers every Christmas — it's chaos",                          modules: ['rec', 'onb'],             impact: 'Volume hiring control' },
+    { text: "Store manager turnover is destroying our customer experience",                          modules: ['perf', 'succ'],           impact: 'Manager retention' },
+    { text: "We can't track training completion across 800 stores",                                  modules: ['learn'],                  impact: 'Centralised compliance' },
+    { text: "Our HR team spends 60% of time on admin, not people strategy",                          modules: ['ec', 'ecp'],              impact: 'Admin to strategy shift' },
+    { text: "No visibility into which stores have the best-performing teams",                        modules: ['wfa', 'perf'],            impact: 'Store-level analytics' },
+    { text: "Pay equity issues are emerging and we don't have data to respond",                      modules: ['comp', 'wfa'],            impact: 'Pay equity defensible' },
+    { text: "Scheduling compliance for part-time workers is a legal risk",                           modules: ['time', 'ec'],             impact: 'Predictive scheduling' },
+    { text: "We promote people into management roles without a development path",                    modules: ['succ', 'skills', 'learn'], impact: 'Manager development' },
+    { text: "Our employer brand is weak — candidates choose competitors over us",                   modules: ['rec'],                    impact: 'Employer brand & CX' },
+    { text: "Zero-hours and variable-pay workers create constant payroll complexity",               modules: ['ecp', 'time'],            impact: 'Variable pay accuracy' },
+    { text: "We can't see which departments have engagement or retention problems in real time",    modules: ['wfa', 'perf'],            impact: 'Engagement intelligence' }
+  ],
+  energy: [
+    { text: "Our workforce is ageing — 30% retire in the next 5 years",                              modules: ['succ', 'wfa'],            impact: 'Retirement risk plan' },
+    { text: "Safety certification tracking for field crews is a spreadsheet disaster",               modules: ['learn'],                  impact: 'Field safety audit-ready' },
+    { text: "We can't identify internal talent before we post externally",                           modules: ['skills', 'succ'],         impact: 'Internal-first hiring' },
+    { text: "Knowledge transfer from retiring engineers is unstructured",                            modules: ['succ', 'learn'],          impact: 'Knowledge capture' },
+    { text: "Global project teams have no unified HR data",                                          modules: ['ec', 'wfa'],              impact: 'Unified global view' },
+    { text: "Compliance reporting for OSHA and regulators is manual and slow",                       modules: ['learn', 'wfa'],           impact: 'Regulator-ready reports' },
+    { text: "Contractor workforce management is completely separate from employees",                 modules: ['ec'],                     impact: 'Total workforce view' },
+    { text: "Leadership development has no formal programme",                                        modules: ['succ', 'learn'],          impact: 'Structured leadership dev' },
+    { text: "We can't rapidly redeploy workers when a project is cancelled or paused",              modules: ['skills', 'wfa'],          impact: 'Rapid redeployment' },
+    { text: "Pay benchmarking in specialist engineering roles is guesswork",                        modules: ['comp'],                   impact: 'Engineering comp benchmarking' },
+    { text: "We have no consistent way to assess technical competencies for field roles",           modules: ['perf', 'learn'],          impact: 'Technical competency framework' }
+  ],
+  construction: [
+    { text: "Every project needs different skills — we can't see availability",                      modules: ['skills', 'wfa'],          impact: 'Skills marketplace' },
+    { text: "CSCS card and certification tracking is done on clipboards",                            modules: ['learn'],                  impact: 'Site-ready compliance' },
+    { text: "Subcontractors and employees are managed on totally different systems",                 modules: ['ec'],                     impact: 'Unified total workforce' },
+    { text: "Mobilising a project team of 200 takes 8 weeks",                                        modules: ['onb', 'skills'],          impact: 'Faster mobilisation' },
+    { text: "No formal process for capturing lessons learned from project teams",                    modules: ['learn', 'perf'],          impact: 'Project knowledge base' },
+    { text: "Our succession plan for site directors is non-existent",                                modules: ['succ'],                   impact: 'Site-leader pipeline' },
+    { text: "Payroll errors for multi-rate workers cause disputes weekly",                           modules: ['ecp', 'time'],            impact: 'Multi-rate pay accuracy' },
+    { text: "Remote site workers have no access to HR self-service",                                 modules: ['ec'],                     impact: 'Mobile self-service' },
+    { text: "Hiring skilled tradespeople takes far too long — projects slip as a result",           modules: ['rec'],                    impact: 'Trades hiring velocity' },
+    { text: "We can't track working hours accurately across multiple sites and shifts",             modules: ['time', 'ecp'],            impact: 'Multi-site time accuracy' },
+    { text: "There's no way for workers to flag safety concerns digitally in real time",            modules: ['ec', 'learn'],            impact: 'Safety digital channel' }
+  ],
+  transport: [
+    { text: "Driver licence compliance tracking is manual and legally risky",                        modules: ['learn', 'ec'],            impact: 'Licence-renewal automation' },
+    { text: "We can't run payroll consistently across 15 countries",                                 modules: ['ecp'],                    impact: 'Global payroll harmony' },
+    { text: "High turnover in warehouse roles means constant rehiring cost",                         modules: ['rec', 'onb'],             impact: 'High-volume hiring' },
+    { text: "Scheduling and time-tracking don't connect to our HR system",                           modules: ['time', 'ec'],             impact: 'End-to-end T&A' },
+    { text: "We have no visibility into our global headcount in real time",                          modules: ['wfa', 'ec'],              impact: 'Real-time headcount' },
+    { text: "New regulations require workforce data we can't produce",                               modules: ['wfa', 'ec'],              impact: 'Regulator-ready data' },
+    { text: "Training for HazMat and safety roles isn't centrally tracked",                          modules: ['learn'],                  impact: 'Centralised safety training' },
+    { text: "Performance management for remote depot workers doesn't exist",                         modules: ['perf'],                   impact: 'Distributed performance' },
+    { text: "We can't track overtime costs before they blow the budget each month",                 modules: ['time', 'wfa'],            impact: 'Proactive overtime control' },
+    { text: "Cross-border worker assignments create HR, tax and legal complexity we can't manage",  modules: ['ec', 'ecp'],              impact: 'Cross-border workforce control' },
+    { text: "Recruiting CDL/LGV drivers is slow and we lose candidates to competitors",             modules: ['rec'],                    impact: 'Driver hiring speed' }
+  ],
+  education: [
+    { text: "Position control and headcount budgeting is done outside HR",                           modules: ['ec', 'wfa'],              impact: 'Position control' },
+    { text: "Tenure and employment type rules are complex and manually managed",                     modules: ['ec'],                     impact: 'Rules-based employment' },
+    { text: "We can't report on workforce demographics for funding compliance",                      modules: ['wfa'],                    impact: 'Funding-ready reporting' },
+    { text: "Annual appraisal processes are paper-based and incomplete",                             modules: ['perf'],                   impact: 'Digital appraisals' },
+    { text: "Onboarding new staff during term-start peaks overwhelms HR",                            modules: ['onb', 'rec'],             impact: 'Term-start scaling' },
+    { text: "No view of which roles are hard to fill or retain",                                     modules: ['wfa', 'rec'],             impact: 'Hiring pain insights' },
+    { text: "Training compliance for safeguarding is tracked on spreadsheets",                       modules: ['learn'],                  impact: 'Safeguarding compliance' },
+    { text: "Our pay grades are out of market — we have no benchmarking data",                       modules: ['comp'],                   impact: 'Market pay alignment' },
+    { text: "Substitute and supply staff management is completely manual",                          modules: ['time', 'ec'],             impact: 'Supply staff management' },
+    { text: "We struggle to attract early-career candidates to the public sector",                  modules: ['rec'],                    impact: 'Employer brand' },
+    { text: "Staff CPD (continuing professional development) is tracked individually, not centrally", modules: ['learn', 'perf'],        impact: 'CPD visibility' }
+  ],
+  pharma: [
+    { text: "GxP training compliance is audited externally — our records aren't audit-ready",        modules: ['learn'],                  impact: 'GxP audit confidence' },
+    { text: "Clinical trial staffing across multiple countries is uncoordinated",                    modules: ['wfa', 'ec'],              impact: 'Trial workforce control' },
+    { text: "We can't track global mobility assignments and cost in one place",                      modules: ['ec', 'comp'],             impact: 'Mobility transparency' },
+    { text: "Our talent pipeline for scientist roles is thin",                                       modules: ['succ', 'skills', 'rec'],  impact: 'Scientific pipeline' },
+    { text: "Equity and long-term incentives aren't integrated with HR data",                        modules: ['comp'],                   impact: 'LTI integration' },
+    { text: "Post-merger workforce integration created duplicate roles and confusion",               modules: ['ec', 'wfa'],              impact: 'Post-M&A clarity' },
+    { text: "Performance calibration for R&D vs commercial teams is inconsistent",                   modules: ['perf'],                   impact: 'Function-aware calibration' },
+    { text: "Regulatory submissions require workforce data in formats we can't generate",            modules: ['wfa', 'ec'],              impact: 'Submission-ready data' },
+    { text: "We can't see which scientists are available for new projects without emailing around",  modules: ['skills', 'wfa'],          impact: 'Resource availability' },
+    { text: "Hiring for highly specialised roles takes 6–12 months — pipelines are always dry",     modules: ['rec', 'succ'],            impact: 'Specialised talent pipeline' },
+    { text: "Different countries have different HR processes — harmonisation seems impossible",      modules: ['ec'],                     impact: 'Global HR harmonisation' }
+  ],
+  tech: [
+    { text: "We scaled from 200 to 2,000 employees in 2 years — HR never caught up",                 modules: ['ec', 'wfa'],              impact: 'Scaled HR foundation' },
+    { text: "Equity comp planning is disconnected from total compensation",                          modules: ['comp'],                   impact: 'Total rewards view' },
+    { text: "Remote-first hiring means we need global payroll in 20+ countries",                     modules: ['ecp'],                    impact: 'Global payroll' },
+    { text: "We have no skills inventory — we're flying blind on internal mobility",                 modules: ['skills', 'succ'],         impact: 'Live skills graph' },
+    { text: "Performance reviews feel performative — engagement scores are falling",                 modules: ['perf'],                   impact: 'Continuous performance' },
+    { text: "Onboarding is inconsistent — some teams do it well, most don't",                        modules: ['onb'],                    impact: 'Standardised onboarding' },
+    { text: "We can't benchmark compensation against market without a data nightmare",               modules: ['comp'],                   impact: 'Market-ready comp' },
+    { text: "Our high-performers have no visible internal career path",                              modules: ['succ', 'skills'],         impact: 'Visible career paths' },
+    { text: "Manager quality is inconsistent and we have no data to coach or develop them",         modules: ['perf', 'learn'],          impact: 'Manager effectiveness' },
+    { text: "We're hiring the same skills externally that we already have somewhere in the company", modules: ['skills', 'wfa'],         impact: 'Skills duplication reduction' },
+    { text: "Our headcount planning process is still done in spreadsheets during budgeting season", modules: ['wfa', 'ec'],              impact: 'Dynamic headcount planning' }
+  ],
+  hospitality: [
+    { text: "Multi-property management means HR data is siloed by location",                         modules: ['ec', 'wfa'],              impact: 'Cross-property HR view' },
+    { text: "Seasonal hiring peaks overwhelm our HR team every summer",                              modules: ['rec', 'onb'],             impact: 'Seasonal scaling' },
+    { text: "Guest-facing training compliance across 50 hotels isn't tracked centrally",             modules: ['learn'],                  impact: 'Brand training assurance' },
+    { text: "Turnover is 80% annually — we don't understand why",                                    modules: ['wfa', 'perf'],            impact: 'Attrition diagnostics' },
+    { text: "Tips and variable pay aren't handled well by our current system",                       modules: ['ecp', 'comp'],            impact: 'Variable pay accuracy' },
+    { text: "No visibility into high-potential team members for promotion",                          modules: ['succ', 'skills'],         impact: 'Hi-po visibility' },
+    { text: "Health and safety certification for kitchen staff is paper-based",                      modules: ['learn'],                  impact: 'Kitchen safety compliance' },
+    { text: "Scheduling and HR don't connect — payroll errors are weekly",                           modules: ['time', 'ecp'],            impact: 'Schedule-pay integration' },
+    { text: "We're struggling to attract service talent back post-pandemic",                        modules: ['rec'],                    impact: 'Talent attraction recovery' },
+    { text: "New property openings take 3 months to get HR processes running",                      modules: ['onb', 'ec'],              impact: 'Property launch speed' },
+    { text: "Language barriers in a multilingual workforce mean compliance training gaps",           modules: ['learn'],                  impact: 'Multilingual compliance' }
+  ],
+  professional: [
+    { text: "We don't know which consultants have which skills until we ask manually",               modules: ['skills'],                 impact: 'Live skills inventory' },
+    { text: "Utilisation reporting is always 2 weeks behind",                                        modules: ['wfa', 'time'],            impact: 'Real-time utilisation' },
+    { text: "High performers leave when they don't see a career path",                               modules: ['succ', 'skills'],         impact: 'Career path visibility' },
+    { text: "Project-based performance feedback doesn't feed into annual reviews",                   modules: ['perf'],                   impact: 'Project-to-review feedback' },
+    { text: "We can't benchmark compensation against competitor firms",                              modules: ['comp'],                   impact: 'Competitive comp' },
+    { text: "Promotion decisions are inconsistent across practice areas",                            modules: ['perf', 'succ'],           impact: 'Calibrated promotions' },
+    { text: "Managing partners across multiple countries with different rules is manual",            modules: ['ec', 'ecp'],              impact: 'Partner admin automation' },
+    { text: "We have no talent marketplace — internal mobility is invisible",                        modules: ['skills', 'succ'],         impact: 'Internal talent marketplace' },
+    { text: "Recruiting top-tier talent is slow and candidate experience is poor",                  modules: ['rec'],                    impact: 'Premium candidate experience' },
+    { text: "Project staffing decisions are based on who is known, not who is best",               modules: ['skills', 'wfa'],          impact: 'Skills-based staffing' },
+    { text: "We can't track learning investment per consultant or practice area",                   modules: ['learn', 'wfa'],           impact: 'Learning ROI visibility' },
+    { text: "New joiners are billable 6 weeks later than they should be",                           modules: ['onb', 'learn'],           impact: 'Faster billable readiness' }
+  ]
+};
+
+/* ============================================================
+   INLINE SVG ICON FACTORY
+   ============================================================ */
+function svgIcon(kind) {
+  const map = {
+    users:   '<circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 18c0-2 1.6-4 4-4s4 1.5 4 4"/>',
+    payroll: '<rect x="3" y="6" width="18" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/><path d="M7 6V4h10v2"/>',
+    search:  '<circle cx="11" cy="11" r="6"/><path d="M21 21l-4.5-4.5"/>',
+    rocket:  '<path d="M5 19l3-3M14.5 4.5c3.5 0 5 1.5 5 5l-9 9-5-1-1-5z"/><path d="M9 14l-3 3"/><circle cx="14" cy="10" r="1.5"/>',
+    chart:   '<path d="M3 20V4"/><path d="M3 20h18"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="13" width="3" height="4"/>',
+    coin:    '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1.4 1.1-2.5 2.5-2.5s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5-2.5 1.1-2.5 2.5 1.1 2.5 2.5 2.5 2.5-1.1 2.5-2.5"/>',
+    tree:    '<path d="M12 4v16"/><circle cx="12" cy="4" r="2"/><circle cx="6" cy="11" r="2"/><circle cx="18" cy="11" r="2"/><circle cx="9" cy="18" r="2"/><circle cx="15" cy="18" r="2"/><path d="M12 6l-6 5M12 6l6 5M12 13l-3 5M12 13l3 5"/>',
+    book:    '<path d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/>',
+    graph:   '<path d="M3 17l5-5 4 4 8-9"/><circle cx="3" cy="17" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="12" cy="16" r="1.5"/><circle cx="20" cy="7" r="1.5"/>',
+    clock:   '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+    sparkle: '<path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M19 15l.7 1.8L21 17.5l-1.3.7L19 20l-.7-1.8L17 17.5l1.3-.7z"/>'
+  };
+  return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${map[kind] || ''}</svg>`;
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  industry: null,
+  selectedPainTexts: new Set(),
+  sortKey: 'pain',
+  sortDir: 1
+};
+
+/* ============================================================
+   SCREEN 1 — render industry grid
+   ============================================================ */
+function renderIndustries() {
+  const grid = document.getElementById('industryGrid');
+  grid.innerHTML = INDUSTRIES.map(ind => `
+    <button class="industry-card" data-industry="${ind.id}">
+      <span class="industry-icon">${ind.icon}</span>
+      <span class="industry-name">${ind.name}</span>
+      <span class="industry-teaser">${ind.teaser}</span>
+      <span class="industry-cta">→ See pain points</span>
+    </button>
+  `).join('');
+  grid.querySelectorAll('.industry-card').forEach(card => {
+    card.addEventListener('click', () => {
+      state.industry = card.dataset.industry;
+      state.selectedPainTexts.clear();
+      renderPainPoints();
+      navigate(2);
+    });
+  });
+}
+
+/* ============================================================
+   SCREEN 2 — render pain points
+   ============================================================ */
+function renderPainPoints() {
+  const ind = INDUSTRIES.find(i => i.id === state.industry);
+  document.getElementById('painHeader').textContent =
+    `${ind.name} — what keeps your HR team up at night?`;
+
+  const grid = document.getElementById('painGrid');
+  const points = PAIN_POINTS[state.industry] || [];
+  grid.innerHTML = points.map((p, i) => `
+    <button class="pain-chip" data-idx="${i}">
+      <span class="pain-checkbox">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1A0F02" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </span>
+      <span>${p.text}</span>
+    </button>
+  `).join('');
+
+  grid.querySelectorAll('.pain-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const idx = +chip.dataset.idx;
+      const text = points[idx].text;
+      if (state.selectedPainTexts.has(text)) {
+        state.selectedPainTexts.delete(text);
+        chip.classList.remove('selected');
+      } else {
+        state.selectedPainTexts.add(text);
+        chip.classList.add('selected');
+      }
+      updateCtaBar();
+    });
+  });
+
+  updateCtaBar();
+}
+
+function updateCtaBar() {
+  const bar = document.getElementById('ctaBar');
+  const count = state.selectedPainTexts.size;
+  document.getElementById('ctaCount').textContent = count;
+  if (count > 0) bar.classList.add('visible');
+  else           bar.classList.remove('visible');
+}
+
+/* ============================================================
+   SCREEN 3 — compute + render results
+   ============================================================ */
+function getSelectedPainObjects() {
+  const points = PAIN_POINTS[state.industry] || [];
+  return points.filter(p => state.selectedPainTexts.has(p.text));
+}
+
+function computeResults() {
+  const selected = getSelectedPainObjects();
+  // Tally module frequency
+  const counts = {};
+  const moduleToPains = {};
+  selected.forEach(p => {
+    p.modules.forEach(m => {
+      counts[m] = (counts[m] || 0) + 1;
+      (moduleToPains[m] = moduleToPains[m] || []).push(p);
+    });
+  });
+  const ranked = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([m, c]) => ({ key: m, count: c, pains: moduleToPains[m] }));
+  return { selected, ranked };
+}
+
+function renderResults() {
+  const ind = INDUSTRIES.find(i => i.id === state.industry);
+  const { selected, ranked } = computeResults();
+
+  document.getElementById('resultsSubtitle').textContent =
+    `Based on ${selected.length} pain point${selected.length === 1 ? '' : 's'} selected for ${ind.name}.`;
+
+  // Modules
+  const stack = document.getElementById('modulesStack');
+  stack.innerHTML = ranked.map((r, idx) => {
+    const m = MODULES[r.key];
+    const painList = r.pains.map(p => `<li>${p.text}</li>`).join('');
+    return `
+      <article class="module-card" style="animation-delay: ${idx * 60}ms;">
+        <span class="module-rank mono">#${String(idx + 1).padStart(2, '0')}</span>
+        <div class="module-head">
+          <div class="module-icon">${m.icon}</div>
+          <div class="module-meta">
+            <div class="module-name">${m.name}</div>
+            <div class="module-coverage">Addresses <strong>${r.count}</strong> of your pain points · ${m.short}</div>
+          </div>
+        </div>
+        <p class="module-value">${m.value}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+          <span class="module-roi">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 17l5-5 4 4 8-9"/><path d="M14 7h7v7"/>
+            </svg>
+            ${m.roi}
+          </span>
+          <a class="module-story-link" href="https://www.sap.com/about/customer-stories.html?search=${encodeURIComponent(ind.name)}" target="_blank" rel="noopener noreferrer">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            How ${ind.name} companies use ${m.short}
+          </a>
+        </div>
+        <button class="module-pain-toggle" data-card="${idx}">
+          <span>Pain points covered (${r.count})</span>
+          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="module-pain-list"><ul>${painList}</ul></div>
+      </article>
+    `;
+  }).join('');
+
+  // Module accordion
+  stack.querySelectorAll('.module-pain-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.module-card').classList.toggle('expanded');
+    });
+  });
+
+  // Stats
+  const moduleCount = ranked.length;
+  const adminPct = Math.min(45, 12 + selected.length * 3);
+  const riskCount = selected.length;
+  animateNumber('statModules', moduleCount);
+  animateNumber('statAdmin', adminPct, '%');
+  animateNumber('statRisk', riskCount);
+
+  // Quick wins
+  const wins = generateQuickWins(ranked, ind);
+  document.getElementById('quickWins').innerHTML = wins.map(w => `
+    <div class="quick-win">
+      <span class="quick-win-dot">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </span>
+      <span>${w}</span>
+    </div>
+  `).join('');
+
+  // Mapping table
+  renderMappingTable();
+
+  // Stamp
+  const now = new Date();
+  document.getElementById('genStamp').textContent =
+    now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+}
+
+function generateQuickWins(ranked, ind) {
+  if (!ranked.length) return [];
+  const m1 = MODULES[ranked[0].key];
+  const m2 = ranked[1] ? MODULES[ranked[1].key] : null;
+  const m3 = ranked[2] ? MODULES[ranked[2].key] : null;
+  const wins = [];
+  wins.push(`Lead with <strong>${m1.short}</strong> in your first wave — addresses ${ranked[0].count} of your top concerns.`);
+  if (m2) wins.push(`Pair with <strong>${m2.short}</strong> for fast compounding value across ${ranked[1].count} more pain points.`);
+  if (m3) wins.push(`<strong>${m3.short}</strong> rounds out wave one — covers ${ranked[2].count} additional issues with limited dependency.`);
+  if (!m2) wins.push('Run a focused MVP on a single business unit before scaling.');
+  if (!m3) wins.push('Layer Workforce Analytics in wave two to measure outcomes.');
+  return wins;
+}
+
+function renderMappingTable() {
+  const selected = getSelectedPainObjects();
+  let rows = [];
+  selected.forEach(p => {
+    p.modules.forEach((mKey, i) => {
+      if (i > 0) return; // primary mapping only — keep table tight
+      rows.push({
+        pain: p.text,
+        module: MODULES[mKey].name,
+        moduleKey: mKey,
+        impact: p.impact,
+        goLive: MODULES[mKey].goLive
+      });
+    });
+  });
+
+  const dir = state.sortDir;
+  const key = state.sortKey;
+  rows.sort((a, b) => {
+    const av = (a[key] || '').toString().toLowerCase();
+    const bv = (b[key] || '').toString().toLowerCase();
+    if (av < bv) return -1 * dir;
+    if (av > bv) return 1 * dir;
+    return 0;
+  });
+
+  const body = document.getElementById('mappingTableBody');
+  body.innerHTML = rows.map(r => `
+    <tr>
+      <td class="col-pain">${r.pain}</td>
+      <td class="col-module">${r.module}</td>
+      <td class="col-impact">${r.impact}</td>
+      <td class="col-go-live">${r.goLive}</td>
+    </tr>
+  `).join('');
+}
+
+/* ============================================================
+   ANIMATED COUNTER
+   ============================================================ */
+function animateNumber(id, target, suffix = '') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = 0;
+  const dur = 900;
+  const t0 = performance.now();
+  function tick(t) {
+    const k = Math.min((t - t0) / dur, 1);
+    const eased = 1 - Math.pow(1 - k, 3);
+    const v = Math.round(start + (target - start) * eased);
+    el.textContent = v + suffix;
+    if (k < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function navigate(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + n).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (n === 3) renderResults();
+
+  // CTA bar only on screen 2
+  if (n !== 2) document.getElementById('ctaBar').classList.remove('visible');
+  else updateCtaBar();
+}
+
+document.querySelectorAll('[data-nav]').forEach(btn => {
+  btn.addEventListener('click', () => navigate(+btn.dataset.nav));
+});
+
+document.getElementById('seeRoadmapBtn').addEventListener('click', () => {
+  if (state.selectedPainTexts.size === 0) return;
+  navigate(3);
+});
+
+document.getElementById('restartBtn').addEventListener('click', () => {
+  state.industry = null;
+  state.selectedPainTexts.clear();
+  navigate(1);
+});
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const ind = INDUSTRIES.find(i => i.id === state.industry);
+  const { ranked } = computeResults();
+  const rows = [
+    ['Rank', 'SF Module', 'Category', 'Pain Points Covered', 'Pain Point Details', 'ROI Benchmark', 'Typical Go-Live', 'Customer Stories'],
+    ...ranked.map((r, idx) => {
+      const m = MODULES[r.key];
+      const painDetails = r.pains.map(p => p.text).join(' | ');
+      const storyUrl = 'https://www.sap.com/about/customer-stories.html?search=' + encodeURIComponent(ind.name);
+      return [
+        idx + 1,
+        m.name,
+        m.short,
+        r.count,
+        painDetails,
+        m.roi,
+        m.goLive,
+        storyUrl
+      ];
+    })
+  ];
+
+  const csv = rows.map(r => r.map(cell => {
+    const s = String(cell).replace(/"/g, '""');
+    return /[",\n]/.test(s) ? `"${s}"` : s;
+  }).join(',')).join('\r\n');
+
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `SF_Value_Navigator_${(ind ? ind.name : 'Summary').replace(/\s+/g, '_')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+/* ============================================================
+   TABLE SORTING
+   ============================================================ */
+document.querySelectorAll('.mapping-table th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const k = th.dataset.sort;
+    if (state.sortKey === k) state.sortDir *= -1;
+    else { state.sortKey = k; state.sortDir = 1; }
+    document.querySelectorAll('.mapping-table th .sort-arrow').forEach(a => a.textContent = '↕');
+    th.querySelector('.sort-arrow').textContent = state.sortDir === 1 ? '↑' : '↓';
+    renderMappingTable();
+  });
+});
+
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderIndustries();
+</script>
+</body>
+</html>
