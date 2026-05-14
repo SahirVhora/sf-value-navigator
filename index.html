@@ -707,6 +707,10 @@ ul { list-style: none; }
   border-radius: 12px;
 }
 .stat-card.span-2 { grid-column: 1 / -1; }
+.stat-card.accented {
+  background: linear-gradient(135deg, rgba(0, 112, 243, 0.16), rgba(245, 166, 35, 0.08));
+  border-color: rgba(245, 166, 35, 0.22);
+}
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
@@ -730,6 +734,45 @@ ul { list-style: none; }
   color: var(--text-secondary);
   font-weight: 400;
   line-height: 1.35;
+}
+.assumption-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.assumption-field label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.assumption-field input,
+.assumption-field select {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  background: rgba(0,0,0,0.2);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.assumption-field input:focus,
+.assumption-field select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.assumption-note {
+  margin-top: 9px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.45;
 }
 .case-section h4 {
   font-size: 14px;
@@ -792,6 +835,83 @@ ul { list-style: none; }
   font-size: 10.5px;
   color: var(--text-muted);
   font-family: 'DM Mono', monospace;
+}
+
+/* Value case roadmap */
+.blueprint-section {
+  margin: 2px 0 40px;
+}
+.blueprint-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.blueprint-header h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.blueprint-header p {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  font-weight: 300;
+  max-width: 620px;
+}
+.blueprint-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.blueprint-card {
+  min-height: 188px;
+  padding: 18px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(12px);
+}
+.blueprint-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.blueprint-time {
+  color: var(--text-muted);
+}
+.blueprint-card h4 {
+  font-size: 0.98rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.blueprint-card p {
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  font-weight: 300;
+}
+.blueprint-modules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.blueprint-pill {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(0, 112, 243, 0.1);
+  border: 1px solid rgba(0, 112, 243, 0.22);
+  color: var(--primary-soft);
+  font-size: 10.5px;
+  font-weight: 500;
 }
 
 /* Mapping table */
@@ -1034,12 +1154,16 @@ ul { list-style: none; }
   .industry-grid { grid-template-columns: repeat(3, 1fr); }
   .results-grid { grid-template-columns: 1fr; }
   .case-panel { position: static; }
+  .blueprint-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 720px) {
   .app { padding: 24px 18px 100px; }
   .industry-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .pain-point-grid { grid-template-columns: 1fr; }
   .stat-grid { grid-template-columns: 1fr; }
+  .assumption-grid { grid-template-columns: 1fr; }
+  .blueprint-header { flex-direction: column; align-items: flex-start; }
+  .blueprint-grid { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
   .timeline { flex-direction: column; }
   .phase { border-right: 1px solid var(--border-glass); border-bottom: 0; }
@@ -1173,10 +1297,57 @@ ul { list-style: none; }
             <span class="stat-value gold" id="statAdmin">0%</span>
             <span class="stat-label">Est. HR admin time saved</span>
           </div>
+          <div class="stat-card accented">
+            <span class="stat-value" id="statHours">0</span>
+            <span class="stat-label">Estimated annual HR hours released</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value gold" id="statReadiness">0</span>
+            <span class="stat-label">Readiness score from selected scope</span>
+          </div>
           <div class="stat-card span-2">
             <span class="stat-value" id="statRisk">0</span>
             <span class="stat-label">Compliance &amp; risk areas covered</span>
           </div>
+        </div>
+
+        <div class="case-section">
+          <h4>Planning assumptions</h4>
+          <div class="assumption-grid">
+            <div class="assumption-field">
+              <label for="assumptionEmployees">Employees</label>
+              <input id="assumptionEmployees" class="value-assumption" type="number" min="100" step="100" value="5000">
+            </div>
+            <div class="assumption-field">
+              <label for="assumptionCountries">Countries</label>
+              <input id="assumptionCountries" class="value-assumption" type="number" min="1" step="1" value="5">
+            </div>
+            <div class="assumption-field">
+              <label for="assumptionHrFte">HR FTE</label>
+              <input id="assumptionHrFte" class="value-assumption" type="number" min="1" step="1" value="35">
+            </div>
+            <div class="assumption-field">
+              <label for="assumptionHires">Annual hires</label>
+              <input id="assumptionHires" class="value-assumption" type="number" min="0" step="50" value="750">
+            </div>
+            <div class="assumption-field">
+              <label for="assumptionMaturity">Data maturity</label>
+              <select id="assumptionMaturity" class="value-assumption">
+                <option value="low">Fragmented</option>
+                <option value="medium" selected>Mixed</option>
+                <option value="high">Reliable</option>
+              </select>
+            </div>
+            <div class="assumption-field">
+              <label for="assumptionComplexity">Process complexity</label>
+              <select id="assumptionComplexity" class="value-assumption">
+                <option value="standard">Standard</option>
+                <option value="mixed" selected>Mixed</option>
+                <option value="complex">Complex</option>
+              </select>
+            </div>
+          </div>
+          <p class="assumption-note">Estimates are directional for discovery. Tune these live in a workshop before taking figures into a formal business case.</p>
         </div>
 
         <div class="case-section">
@@ -1205,6 +1376,17 @@ ul { list-style: none; }
           </div>
         </div>
       </aside>
+    </div>
+
+    <div class="blueprint-section">
+      <div class="blueprint-header">
+        <div>
+          <span class="section-eyebrow">Value case builder</span>
+          <h3>Implementation blueprint</h3>
+        </div>
+        <p id="blueprintSummary">A phased plan will appear here once the roadmap is generated.</p>
+      </div>
+      <div class="blueprint-grid" id="blueprintGrid"></div>
     </div>
 
     <!-- Mapping table -->
@@ -1596,8 +1778,61 @@ const state = {
   industry: null,
   selectedPainTexts: new Set(),
   sortKey: 'pain',
-  sortDir: 1
+  sortDir: 1,
+  assumptions: {
+    employees: 5000,
+    countries: 5,
+    hrFte: 35,
+    annualHires: 750,
+    maturity: 'medium',
+    complexity: 'mixed'
+  }
 };
+
+const VALUE_FACTORS = {
+  ec:     { admin: 0.11, risk: 1.0, readiness: 10 },
+  ecp:    { admin: 0.08, risk: 1.3, readiness: -8 },
+  rec:    { admin: 0.05, risk: 0.4, readiness: 4 },
+  onb:    { admin: 0.06, risk: 0.8, readiness: 6 },
+  perf:   { admin: 0.04, risk: 0.3, readiness: 5 },
+  comp:   { admin: 0.05, risk: 0.9, readiness: -2 },
+  succ:   { admin: 0.03, risk: 0.2, readiness: 4 },
+  learn:  { admin: 0.06, risk: 1.2, readiness: 7 },
+  wfa:    { admin: 0.07, risk: 0.7, readiness: -4 },
+  time:   { admin: 0.08, risk: 1.1, readiness: -3 },
+  skills: { admin: 0.04, risk: 0.2, readiness: 2 }
+};
+
+const ROADMAP_PHASES = [
+  {
+    id: 'foundation',
+    title: 'Foundation',
+    time: '0-6 mo',
+    modules: ['ec', 'ecp', 'time'],
+    narrative: 'Stabilise core HR, country structures, employment data, payroll and time foundations.'
+  },
+  {
+    id: 'efficiency',
+    title: 'Efficiency',
+    time: '3-9 mo',
+    modules: ['learn', 'onb', 'rec'],
+    narrative: 'Digitise repeatable HR moments: hiring, onboarding, compliance training and operational service.'
+  },
+  {
+    id: 'talent',
+    title: 'Talent',
+    time: '6-12 mo',
+    modules: ['perf', 'comp', 'succ'],
+    narrative: 'Create consistent performance, reward, calibration, succession and leadership pipelines.'
+  },
+  {
+    id: 'intelligence',
+    title: 'Intelligence',
+    time: '9-18 mo',
+    modules: ['wfa', 'skills'],
+    narrative: 'Move from process automation to workforce insight, skills visibility and strategic planning.'
+  }
+];
 
 function isValidIndustry(id) {
   return INDUSTRIES.some(ind => ind.id === id);
@@ -1759,9 +1994,72 @@ function computeResults() {
   return { selected, ranked };
 }
 
+function getAssumptionsFromDom() {
+  const employees = Number(document.getElementById('assumptionEmployees')?.value) || state.assumptions.employees;
+  const countries = Number(document.getElementById('assumptionCountries')?.value) || state.assumptions.countries;
+  const hrFte = Number(document.getElementById('assumptionHrFte')?.value) || state.assumptions.hrFte;
+  const annualHires = Number(document.getElementById('assumptionHires')?.value) || state.assumptions.annualHires;
+  const maturity = document.getElementById('assumptionMaturity')?.value || state.assumptions.maturity;
+  const complexity = document.getElementById('assumptionComplexity')?.value || state.assumptions.complexity;
+
+  state.assumptions = {
+    employees: Math.max(100, employees),
+    countries: Math.max(1, countries),
+    hrFte: Math.max(1, hrFte),
+    annualHires: Math.max(0, annualHires),
+    maturity,
+    complexity
+  };
+  return state.assumptions;
+}
+
+function computeValueCase(selected, ranked) {
+  const assumptions = getAssumptionsFromDom();
+  const moduleKeys = ranked.map(r => r.key);
+  const painIntensity = Math.min(1.35, 0.72 + selected.length * 0.07);
+  const complexityFactor = assumptions.complexity === 'complex' ? 1.2 : assumptions.complexity === 'standard' ? 0.86 : 1;
+  const maturityPenalty = assumptions.maturity === 'low' ? 14 : assumptions.maturity === 'medium' ? 6 : 0;
+  const countryPenalty = Math.min(12, Math.max(0, assumptions.countries - 3) * 1.3);
+  const modulePenalty = Math.max(0, moduleKeys.length - 3) * 4;
+  const adminPotential = moduleKeys.reduce((sum, key) => sum + (VALUE_FACTORS[key]?.admin || 0.03), 0);
+  const adminPct = Math.min(52, Math.round((10 + adminPotential * 70 * painIntensity) / complexityFactor));
+  const annualHrHours = assumptions.hrFte * 1760;
+  const hoursReleased = Math.round(annualHrHours * (adminPct / 100) * 0.55);
+  const riskCount = Math.max(selected.length, Math.round(moduleKeys.reduce((sum, key) => sum + (VALUE_FACTORS[key]?.risk || 0.4), 0) * painIntensity));
+  const readinessBase = 78 + moduleKeys.reduce((sum, key) => sum + (VALUE_FACTORS[key]?.readiness || 0), 0);
+  const readiness = Math.max(28, Math.min(95, Math.round(readinessBase - maturityPenalty - countryPenalty - modulePenalty)));
+  const complexityLabel = readiness >= 76 ? 'quick-win ready' : readiness >= 58 ? 'moderate transformation' : 'enterprise programme';
+  const implementationMonths = Math.max(4, Math.min(18, Math.round(4 + moduleKeys.length * 1.6 + assumptions.countries * 0.25 + (assumptions.complexity === 'complex' ? 3 : 0))));
+  const impactedEmployees = Math.min(assumptions.employees, Math.round(assumptions.employees * Math.min(1, 0.3 + selected.length * 0.08)));
+
+  return {
+    assumptions,
+    adminPct,
+    hoursReleased,
+    riskCount,
+    readiness,
+    complexityLabel,
+    implementationMonths,
+    impactedEmployees
+  };
+}
+
+function buildPhasedRoadmap(ranked) {
+  const rankedKeys = ranked.map(r => r.key);
+  return ROADMAP_PHASES.map(phase => {
+    const phaseModules = phase.modules.filter(key => rankedKeys.includes(key));
+    return {
+      ...phase,
+      phaseModules,
+      isActive: phaseModules.length > 0
+    };
+  }).filter(phase => phase.isActive);
+}
+
 function renderResults() {
   const ind = INDUSTRIES.find(i => i.id === state.industry);
   const { selected, ranked } = computeResults();
+  const valueCase = computeValueCase(selected, ranked);
 
   document.getElementById('resultsSubtitle').textContent =
     `Based on ${selected.length} pain point${selected.length === 1 ? '' : 's'} selected for ${ind.name}.`;
@@ -1815,11 +2113,11 @@ function renderResults() {
 
   // Stats
   const moduleCount = ranked.length;
-  const adminPct = Math.min(45, 12 + selected.length * 3);
-  const riskCount = selected.length;
   animateNumber('statModules', moduleCount);
-  animateNumber('statAdmin', adminPct, '%');
-  animateNumber('statRisk', riskCount);
+  animateNumber('statAdmin', valueCase.adminPct, '%');
+  animateNumber('statHours', valueCase.hoursReleased);
+  animateNumber('statReadiness', valueCase.readiness);
+  animateNumber('statRisk', valueCase.riskCount);
 
   // Quick wins
   const wins = generateQuickWins(ranked, ind);
@@ -1834,11 +2132,40 @@ function renderResults() {
 
   // Mapping table
   renderMappingTable();
+  renderBlueprint(ranked, valueCase);
 
   // Stamp
   const now = new Date();
   document.getElementById('genStamp').textContent =
     now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+}
+
+function renderBlueprint(ranked, valueCase) {
+  const phases = buildPhasedRoadmap(ranked);
+  const grid = document.getElementById('blueprintGrid');
+  const summary = document.getElementById('blueprintSummary');
+  if (!grid || !summary) return;
+
+  summary.textContent =
+    `${valueCase.complexityLabel.charAt(0).toUpperCase() + valueCase.complexityLabel.slice(1)}: plan around ${valueCase.implementationMonths} months, reaching roughly ${formatNumber(valueCase.impactedEmployees)} employees in the first transformation wave.`;
+
+  grid.innerHTML = phases.map((phase, idx) => `
+    <article class="blueprint-card">
+      <div class="blueprint-kicker">
+        <span>${String(idx + 1).padStart(2, '0')} · ${phase.id}</span>
+        <span class="blueprint-time">${phase.time}</span>
+      </div>
+      <h4>${phase.title}</h4>
+      <p>${phase.narrative}</p>
+      <div class="blueprint-modules">
+        ${phase.phaseModules.map(key => `<span class="blueprint-pill">${MODULES[key].short}</span>`).join('')}
+      </div>
+    </article>
+  `).join('');
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat('en-GB').format(value);
 }
 
 function generateQuickWins(ranked, ind) {
@@ -1905,7 +2232,7 @@ function animateNumber(id, target, suffix = '') {
     const k = Math.min((t - t0) / dur, 1);
     const eased = 1 - Math.pow(1 - k, 3);
     const v = Math.round(start + (target - start) * eased);
-    el.textContent = v + suffix;
+    el.textContent = formatNumber(v) + suffix;
     if (k < 1) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
@@ -1988,6 +2315,8 @@ function exportRoadmapPdf() {
 
   const ind = INDUSTRIES.find(i => i.id === state.industry);
   const { selected, ranked } = computeResults();
+  const valueCase = computeValueCase(selected, ranked);
+  const phases = buildPhasedRoadmap(ranked);
   if (!ind || !selected.length || !ranked.length) return;
 
   const { jsPDF } = window.jspdf;
@@ -2041,6 +2370,34 @@ function exportRoadmapPdf() {
   doc.text(generatedDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), margin, 33);
 
   y = 50;
+  doc.setTextColor(darkText);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('Executive value case', margin, y);
+  y += 8;
+
+  const metrics = [
+    ['Admin time saved', `${valueCase.adminPct}%`],
+    ['Annual HR hours released', formatNumber(valueCase.hoursReleased)],
+    ['Readiness score', `${valueCase.readiness}/100`],
+    ['First-wave reach', `${formatNumber(valueCase.impactedEmployees)} employees`]
+  ];
+  metrics.forEach((metric, idx) => {
+    const x = margin + (idx % 2) * (contentWidth / 2);
+    const boxY = y + Math.floor(idx / 2) * 18;
+    doc.setFillColor(idx % 2 === 0 ? '#f4f7fb' : '#ffffff');
+    doc.roundedRect(x, boxY, contentWidth / 2 - 4, 14, 2, 2, 'F');
+    doc.setTextColor(teal);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(metric[1], x + 4, boxY + 6);
+    doc.setTextColor(mutedText);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text(metric[0], x + 4, boxY + 11);
+  });
+  y += 42;
+
   doc.setTextColor(darkText);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
@@ -2122,6 +2479,24 @@ function exportRoadmapPdf() {
     y += rowHeight;
   });
 
+  y += 8;
+  ensureSpace(30);
+  doc.setTextColor(darkText);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('3. Implementation blueprint', margin, y);
+  y += 8;
+
+  phases.forEach((phase, idx) => {
+    const moduleNames = phase.phaseModules.map(key => MODULES[key].short).join(', ');
+    const phaseText = `${idx + 1}. ${phase.title} (${phase.time}) - ${phase.narrative} Modules: ${moduleNames}.`;
+    ensureSpace(18);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(mutedText);
+    y = drawWrappedText(phaseText, margin, y, contentWidth, 4.5) + 3;
+  });
+
   addFooter();
   const safeIndustry = ind.name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
   doc.save(`SF-Roadmap-${safeIndustry}-${isoDate}.pdf`);
@@ -2129,8 +2504,22 @@ function exportRoadmapPdf() {
 
 document.getElementById('downloadBtn').addEventListener('click', () => {
   const ind = INDUSTRIES.find(i => i.id === state.industry);
-  const { ranked } = computeResults();
+  const { selected, ranked } = computeResults();
+  const valueCase = computeValueCase(selected, ranked);
+  const phases = buildPhasedRoadmap(ranked);
   const rows = [
+    ['SF Value Navigator Summary'],
+    ['Industry', ind ? ind.name : ''],
+    ['Selected pain points', selected.length],
+    ['Estimated admin time saved', `${valueCase.adminPct}%`],
+    ['Estimated annual HR hours released', valueCase.hoursReleased],
+    ['Readiness score', `${valueCase.readiness}/100`],
+    ['Implementation profile', valueCase.complexityLabel],
+    ['Estimated first-wave months', valueCase.implementationMonths],
+    ['Assumed employees', valueCase.assumptions.employees],
+    ['Assumed countries', valueCase.assumptions.countries],
+    ['Assumed HR FTE', valueCase.assumptions.hrFte],
+    [],
     ['Rank', 'SF Module', 'Category', 'Pain Points Covered', 'Pain Point Details', 'ROI Benchmark', 'Typical Go-Live', 'Customer Stories'],
     ...ranked.map((r, idx) => {
       const m = MODULES[r.key];
@@ -2146,7 +2535,15 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
         m.goLive,
         storyUrl
       ];
-    })
+    }),
+    [],
+    ['Phase', 'Timing', 'Modules', 'Narrative'],
+    ...phases.map((phase, idx) => [
+      `${idx + 1}. ${phase.title}`,
+      phase.time,
+      phase.phaseModules.map(key => MODULES[key].name).join(' | '),
+      phase.narrative
+    ])
   ];
 
   const csv = rows.map(r => r.map(cell => {
@@ -2174,6 +2571,14 @@ document.querySelectorAll('.mapping-table th[data-sort]').forEach(th => {
     document.querySelectorAll('.mapping-table th .sort-arrow').forEach(a => a.textContent = '↕');
     th.querySelector('.sort-arrow').textContent = state.sortDir === 1 ? '↑' : '↓';
     renderMappingTable();
+  });
+});
+
+document.querySelectorAll('.value-assumption').forEach(field => {
+  const eventName = field.tagName === 'SELECT' ? 'change' : 'input';
+  field.addEventListener(eventName, () => {
+    if (!state.industry || !state.selectedPainTexts.size) return;
+    renderResults();
   });
 });
 
