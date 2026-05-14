@@ -4,6 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SAP SuccessFactors Value Navigator</title>
+<meta property="og:image" content="https://sahirvhora.github.io/sf-value-navigator/preview.svg">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sahirvhora.github.io/sf-value-navigator/preview.svg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -461,6 +467,31 @@ ul { list-style: none; }
 .btn-secondary:hover {
   background: var(--bg-glass-hover);
   border-color: var(--accent);
+}
+.share-action {
+  position: relative;
+}
+.share-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%) translateY(4px);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #00c4cc;
+  color: #07111B;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 196, 204, 0.28);
+}
+.share-tooltip.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* ============================================================
@@ -1202,6 +1233,24 @@ ul { list-style: none; }
         </svg>
         Start over
       </button>
+      <span class="share-action">
+        <button class="btn-secondary" id="copyLinkBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/>
+            <path d="M14 11a5 5 0 0 0-7.1 0l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1"/>
+          </svg>
+          Copy shareable link
+        </button>
+        <span class="share-tooltip" id="copyTooltip">Copied!</span>
+      </span>
+      <button class="btn-secondary" id="pdfBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 2v6h6"/>
+          <path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/>
+        </svg>
+        Download Roadmap as PDF
+      </button>
       <button class="btn-secondary" id="downloadBtn">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -1229,7 +1278,7 @@ ul { list-style: none; }
   </button>
 </div>
 
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ============================================================
    DATA — Industries
@@ -1550,6 +1599,68 @@ const state = {
   sortDir: 1
 };
 
+function isValidIndustry(id) {
+  return INDUSTRIES.some(ind => ind.id === id);
+}
+
+function getSelectedPainIndexes() {
+  const points = PAIN_POINTS[state.industry] || [];
+  return points
+    .map((p, idx) => state.selectedPainTexts.has(p.text) ? idx : null)
+    .filter(idx => idx !== null);
+}
+
+function updateHash() {
+  const base = window.location.pathname + window.location.search;
+  if (!state.industry) {
+    history.replaceState(null, '', base);
+    return;
+  }
+
+  const indexes = getSelectedPainIndexes();
+  const hashParts = [`industry=${encodeURIComponent(state.industry)}`];
+  if (indexes.length) hashParts.push(`pains=${indexes.join(',')}`);
+  history.replaceState(null, '', `${base}#${hashParts.join('&')}`);
+}
+
+function readHashState() {
+  const raw = window.location.hash.replace(/^#/, '');
+  if (!raw) return null;
+
+  const params = new URLSearchParams(raw);
+  const industry = params.get('industry');
+  if (!industry || !isValidIndustry(industry)) return null;
+
+  const points = PAIN_POINTS[industry] || [];
+  const painsParam = params.get('pains');
+  if (!painsParam) return { industry, painIndexes: [] };
+
+  const painIndexes = painsParam.split(',').map(value => Number(value.trim()));
+  const hasOnlyValidIndexes = painIndexes.length > 0 &&
+    painIndexes.every(idx => Number.isInteger(idx) && idx >= 0 && idx < points.length);
+
+  if (!hasOnlyValidIndexes) return null;
+  return { industry, painIndexes };
+}
+
+function restoreFromHash() {
+  const saved = readHashState();
+  if (!saved) return false;
+
+  state.industry = saved.industry;
+  state.selectedPainTexts.clear();
+  const points = PAIN_POINTS[state.industry] || [];
+  saved.painIndexes.forEach(idx => state.selectedPainTexts.add(points[idx].text));
+  renderPainPoints();
+
+  if (saved.painIndexes.length) {
+    navigate(3);
+  } else {
+    navigate(2);
+  }
+  return true;
+}
+
 /* ============================================================
    SCREEN 1 — render industry grid
    ============================================================ */
@@ -1567,6 +1678,7 @@ function renderIndustries() {
     card.addEventListener('click', () => {
       state.industry = card.dataset.industry;
       state.selectedPainTexts.clear();
+      updateHash();
       renderPainPoints();
       navigate(2);
     });
@@ -1584,7 +1696,7 @@ function renderPainPoints() {
   const grid = document.getElementById('painGrid');
   const points = PAIN_POINTS[state.industry] || [];
   grid.innerHTML = points.map((p, i) => `
-    <button class="pain-chip" data-idx="${i}">
+    <button class="pain-chip${state.selectedPainTexts.has(p.text) ? ' selected' : ''}" data-idx="${i}">
       <span class="pain-checkbox">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1A0F02" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
@@ -1605,6 +1717,7 @@ function renderPainPoints() {
         state.selectedPainTexts.add(text);
         chip.classList.add('selected');
       }
+      updateHash();
       updateCtaBar();
     });
   });
@@ -1806,7 +1919,10 @@ function navigate(n) {
   document.getElementById('screen-' + n).classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  if (n === 3) renderResults();
+  if (n === 3) {
+    updateHash();
+    renderResults();
+  }
 
   // CTA bar only on screen 2
   if (n !== 2) document.getElementById('ctaBar').classList.remove('visible');
@@ -1825,8 +1941,191 @@ document.getElementById('seeRoadmapBtn').addEventListener('click', () => {
 document.getElementById('restartBtn').addEventListener('click', () => {
   state.industry = null;
   state.selectedPainTexts.clear();
+  updateHash();
   navigate(1);
 });
+
+document.getElementById('copyLinkBtn').addEventListener('click', async () => {
+  updateHash();
+  const tooltip = document.getElementById('copyTooltip');
+  const shareUrl = window.location.href;
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(shareUrl);
+    } else {
+      const input = document.createElement('textarea');
+      input.value = shareUrl;
+      input.setAttribute('readonly', '');
+      input.style.position = 'fixed';
+      input.style.opacity = '0';
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+    }
+
+    tooltip.textContent = 'Copied!';
+  } catch (err) {
+    tooltip.textContent = 'Copy failed';
+    console.error('Unable to copy shareable link', err);
+  }
+
+  tooltip.classList.add('visible');
+  window.clearTimeout(tooltip.hideTimer);
+  tooltip.hideTimer = window.setTimeout(() => tooltip.classList.remove('visible'), 1400);
+});
+
+document.getElementById('pdfBtn').addEventListener('click', () => {
+  exportRoadmapPdf();
+});
+
+function exportRoadmapPdf() {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    console.error('jsPDF failed to load.');
+    return;
+  }
+
+  const ind = INDUSTRIES.find(i => i.id === state.industry);
+  const { selected, ranked } = computeResults();
+  if (!ind || !selected.length || !ranked.length) return;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 16;
+  const contentWidth = pageWidth - margin * 2;
+  const navy = '#1a2744';
+  const teal = '#00c4cc';
+  const darkText = '#182235';
+  const mutedText = '#5d6878';
+  const generatedDate = new Date();
+  const isoDate = generatedDate.toISOString().slice(0, 10);
+  let y = 0;
+
+  function addFooter() {
+    doc.setDrawColor(0, 196, 204);
+    doc.setLineWidth(0.4);
+    doc.line(margin, pageHeight - 16, pageWidth - margin, pageHeight - 16);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(93, 104, 120);
+    doc.text('Generated by SF Value Navigator - sahirvhora.github.io/sf-value-navigator', margin, pageHeight - 9);
+  }
+
+  function ensureSpace(requiredHeight) {
+    if (y + requiredHeight <= pageHeight - 24) return;
+    addFooter();
+    doc.addPage();
+    y = margin;
+  }
+
+  function drawWrappedText(text, x, startY, maxWidth, lineHeight) {
+    const lines = doc.splitTextToSize(text, maxWidth);
+    doc.text(lines, x, startY);
+    return startY + lines.length * lineHeight;
+  }
+
+  doc.setFillColor(navy);
+  doc.rect(0, 0, pageWidth, 38, 'F');
+  doc.setTextColor('#ffffff');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('SAP SuccessFactors Transformation Roadmap', margin, 17);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.text(ind.name, margin, 26);
+  doc.setTextColor(teal);
+  doc.setFont('helvetica', 'bold');
+  doc.text(generatedDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), margin, 33);
+
+  y = 50;
+  doc.setTextColor(darkText);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('1. Priority-ranked module list', margin, y);
+  y += 8;
+
+  ranked.forEach((r, idx) => {
+    const module = MODULES[r.key];
+    const priority = idx < 2 ? 'High' : 'Medium';
+    ensureSpace(24);
+
+    doc.setFillColor(idx < 2 ? teal : navy);
+    doc.roundedRect(margin, y - 5, 22, 7, 2, 2, 'F');
+    doc.setTextColor('#ffffff');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(priority, margin + 11, y, { align: 'center' });
+
+    doc.setTextColor(darkText);
+    doc.setFontSize(11);
+    doc.text(`${idx + 1}. ${module.name}`, margin + 28, y);
+    y += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(mutedText);
+    y = drawWrappedText(module.value, margin + 28, y, contentWidth - 28, 4.5) + 3;
+  });
+
+  y += 4;
+  ensureSpace(28);
+  doc.setTextColor(darkText);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('2. Pain point to module mapping', margin, y);
+  y += 8;
+
+  const colPain = margin;
+  const colModule = margin + 102;
+  const colImpact = margin + 150;
+  const rowPad = 5;
+
+  function drawTableHeader() {
+    doc.setFillColor(navy);
+    doc.rect(margin, y, contentWidth, 9, 'F');
+    doc.setTextColor('#ffffff');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('Pain point', colPain + 2, y + 6);
+    doc.text('Module', colModule + 2, y + 6);
+    doc.text('Impact', colImpact + 2, y + 6);
+    y += 9;
+  }
+
+  drawTableHeader();
+  selected.forEach((pain, idx) => {
+    const primaryModule = MODULES[pain.modules[0]];
+    const painLines = doc.splitTextToSize(pain.text, 94);
+    const moduleLines = doc.splitTextToSize(primaryModule.name, 42);
+    const impactLines = doc.splitTextToSize(pain.impact, 38);
+    const rowHeight = Math.max(painLines.length, moduleLines.length, impactLines.length) * 4.2 + rowPad;
+
+    ensureSpace(rowHeight + 12);
+    if (y === margin) drawTableHeader();
+
+    doc.setFillColor(idx % 2 === 0 ? '#f4f7fb' : '#ffffff');
+    doc.rect(margin, y, contentWidth, rowHeight, 'F');
+    doc.setDrawColor(222, 229, 238);
+    doc.line(margin, y + rowHeight, pageWidth - margin, y + rowHeight);
+
+    doc.setTextColor(darkText);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.text(painLines, colPain + 2, y + 5);
+    doc.setFont('helvetica', 'bold');
+    doc.text(moduleLines, colModule + 2, y + 5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(mutedText);
+    doc.text(impactLines, colImpact + 2, y + 5);
+    y += rowHeight;
+  });
+
+  addFooter();
+  const safeIndustry = ind.name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
+  doc.save(`SF-Roadmap-${safeIndustry}-${isoDate}.pdf`);
+}
 
 document.getElementById('downloadBtn').addEventListener('click', () => {
   const ind = INDUSTRIES.find(i => i.id === state.industry);
@@ -1883,6 +2182,7 @@ document.querySelectorAll('.mapping-table th[data-sort]').forEach(th => {
    INIT
    ============================================================ */
 renderIndustries();
+restoreFromHash();
 </script>
 </body>
 </html>
