@@ -8,11 +8,11 @@ Built for HR leaders, transformation consultants, and pre-sales teams who need t
 
 ## What it does
 
-1. **Pick your industry** — choose from 12 sectors, each pre-loaded with the eight pain points HR leaders in that space raise most often
-2. **Select your pain points** — tick every challenge that resonates; the more you select, the more precise the output
-3. **Get your roadmap** — instantly receive a priority-ranked list of SF modules mapped directly to your selected pain points
-4. **Build the value case** — adjust planning assumptions such as employees, countries, HR FTE, annual hires, data maturity, and process complexity
-5. **Review the blueprint** — see estimated HR admin time saved, annual HR hours released, readiness score, implementation profile, and a phased roadmap
+1. **Pick your industry** - choose from 12 sectors, each pre-loaded with the eight pain points HR leaders in that space raise most often
+2. **Select your pain points** - tick every challenge that resonates; the more you select, the more precise the output
+3. **Get your roadmap** - instantly receive a priority-ranked list of SF modules mapped directly to your selected pain points
+4. **Build the value case** - adjust planning assumptions such as employees, countries, HR FTE, annual hires, data maturity, and process complexity
+5. **Review the blueprint** - see estimated HR admin time saved, annual HR hours released, readiness score, implementation profile, and a phased roadmap
 
 No forms. No logins. No back-end. Just a client-ready transformation narrative in the browser.
 
@@ -88,12 +88,12 @@ Recommended modules are grouped into practical transformation waves:
 
 ## Tech
 
-- Pure HTML / CSS / JavaScript — zero dependencies, zero build step
+- Pure HTML / CSS / JavaScript - zero dependencies, zero build step
 - Animated gradient mesh background, glassmorphism cards, smooth screen transitions
 - Client-side PDF export via jsPDF CDN
 - CSV summary export for workshop follow-up
 - Shareable URL state for industry and selected pain points
-- Fully responsive — works on desktop, tablet, and mobile
+- Fully responsive - works on desktop, tablet, and mobile
 - Open `index.html` directly in any browser
 
 ---
@@ -109,7 +109,7 @@ Recommended modules are grouped into practical transformation waves:
 
 ## Author
 
-**Sahir Vhora** — SAP SuccessFactors Data Lead & Solution Architect  
+**Sahir Vhora** - SAP SuccessFactors Data Lead & Solution Architect
 19 years of HR transformation delivery across IKEA, Saudi Aramco, Vodafone, and American Airlines.
 
 [LinkedIn](https://www.linkedin.com/in/sahir-vhora-9242439)

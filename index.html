@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SAP SuccessFactors Value Navigator</title>
-<meta name="description" content="SAP SuccessFactors value realisation navigator — interactive tool to explore, plan, and track value realisation across SF modules.">
+<meta name="description" content="SAP SuccessFactors value realisation navigator - interactive tool to explore, plan, and track value realisation across SF modules.">
 <meta property="og:image" content="https://sahirvhora.github.io/sf-value-navigator/preview.svg">
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
@@ -310,7 +310,7 @@ ul { list-style: none; }
 }
 
 /* ============================================================
-   SCREEN 2 — PAIN POINTS
+   SCREEN 2 - PAIN POINTS
    ============================================================ */
 .back-btn {
   display: inline-flex;
@@ -496,7 +496,7 @@ ul { list-style: none; }
 }
 
 /* ============================================================
-   SCREEN 3 — RESULTS
+   SCREEN 3 - RESULTS
    ============================================================ */
 .results-header {
   display: flex;
@@ -675,7 +675,7 @@ ul { list-style: none; }
   font-weight: 600;
 }
 
-/* Right column — business case */
+/* Right column - business case */
 .case-panel {
   position: sticky;
   top: 24px;
@@ -1199,9 +1199,9 @@ ul { list-style: none; }
 </head>
 <body>
 <div style="background:linear-gradient(90deg,#c8a84e,#e0c46e);color:#1a1815;padding:10px 20px;text-align:center;font-family:Sora,sans-serif;font-size:13px;font-weight:600;position:relative;z-index:10">
-  ⚙️ Want step-by-step implementation steps? Try 
+  ⚙️ Want step-by-step implementation steps? Try
   <a href="https://sahirvhora.github.io/sf-compass/" style="color:#1a1815;font-weight:800;text-decoration:underline">SF Compass →</a>
-  — 94 scenarios across 8 SF modules
+  - 94 scenarios across 8 SF modules
 </div>
 <div class="mesh-bg"></div>
 
@@ -1468,7 +1468,7 @@ ul { list-style: none; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ============================================================
-   DATA — Industries
+   DATA - Industries
    ============================================================ */
 const INDUSTRIES = [
   { id: 'manufacturing',  icon: '🏭', name: 'Manufacturing',                    teaser: 'Managing shift workers, skills gaps, and union compliance' },
@@ -1486,14 +1486,14 @@ const INDUSTRIES = [
 ];
 
 /* ============================================================
-   DATA — SF modules
+   DATA - SF modules
    ============================================================ */
 const MODULES = {
   ec: {
     name: 'Employee Central',
     short: 'Core HR',
     icon: svgIcon('users'),
-    value: 'The single source of truth for your global workforce. Org structure, position management, and unified employee data — finally without silos.',
+    value: 'The single source of truth for your global workforce. Org structure, position management, and unified employee data - finally without silos.',
     roi: 'Up to 40% reduction in HR admin workload',
     goLive: '4–6 mo',
     storySearch: 'successfactors employee central'
@@ -1511,7 +1511,7 @@ const MODULES = {
     name: 'Recruiting (RCM + RMK)',
     short: 'ATS & Marketing',
     icon: svgIcon('search'),
-    value: 'A modern applicant tracking system plus recruitment marketing — purpose-built for the volume, speed, and candidate experience HR leaders need today.',
+    value: 'A modern applicant tracking system plus recruitment marketing - purpose-built for the volume, speed, and candidate experience HR leaders need today.',
     roi: '30–50% faster time-to-hire',
     goLive: '3–4 mo',
     storySearch: 'successfactors recruiting'
@@ -1547,7 +1547,7 @@ const MODULES = {
     name: 'Succession & Development',
     short: 'Talent Pipeline',
     icon: svgIcon('tree'),
-    value: 'Talent pools, 9-box reviews, and structured leadership pipelines. See who is ready next — before the role goes external.',
+    value: 'Talent pools, 9-box reviews, and structured leadership pipelines. See who is ready next - before the role goes external.',
     roi: '3× more internal promotions vs external hires',
     goLive: '3–4 mo',
     storySearch: 'successfactors succession planning'
@@ -1565,7 +1565,7 @@ const MODULES = {
     name: 'Workforce Analytics & Planning',
     short: 'People Analytics',
     icon: svgIcon('graph'),
-    value: 'Predictive headcount planning, workforce KPIs, and scenario modelling. Stop reporting on the past — start planning the future.',
+    value: 'Predictive headcount planning, workforce KPIs, and scenario modelling. Stop reporting on the past - start planning the future.',
     roi: 'Headcount forecasting accuracy improved by 35%',
     goLive: '3–6 mo',
     storySearch: 'successfactors workforce analytics planning'
@@ -1574,7 +1574,7 @@ const MODULES = {
     name: 'Time & Attendance',
     short: 'Schedule & Timesheets',
     icon: svgIcon('clock'),
-    value: 'Scheduling, time capture, and overtime control — natively integrated with payroll and Employee Central. Cut overtime costs and compliance risk.',
+    value: 'Scheduling, time capture, and overtime control - natively integrated with payroll and Employee Central. Cut overtime costs and compliance risk.',
     roi: 'Overtime costs reduced by 18–25%',
     goLive: '3–4 mo',
     storySearch: 'successfactors time attendance'
@@ -1591,18 +1591,18 @@ const MODULES = {
 };
 
 /* ============================================================
-   DATA — Pain points per industry + module mapping
+   DATA - Pain points per industry + module mapping
    Each pain point: { text, modules: [moduleKey, ...] in priority order, impact: short impact phrase }
    ============================================================ */
 const PAIN_POINTS = {
   manufacturing: [
     { text: "How do we track certifications and safety training for 5,000+ plant workers?",          modules: ['learn', 'wfa'],           impact: 'Audit-ready compliance' },
-    { text: "Our shift scheduling is done in spreadsheets — how do we fix this?",                    modules: ['time', 'ec'],             impact: 'Schedule automation' },
+    { text: "Our shift scheduling is done in spreadsheets - how do we fix this?",                    modules: ['time', 'ec'],             impact: 'Schedule automation' },
     { text: "We can't see which skills we're missing until a line stops production",                 modules: ['skills', 'wfa'],          impact: 'Predictive skills coverage' },
     { text: "Succession planning for our retiring senior engineers is non-existent",                 modules: ['succ', 'skills'],         impact: 'Critical-role pipeline' },
-    { text: "HR data lives in 6 different legacy systems — nothing talks to each other",             modules: ['ec', 'wfa'],              impact: 'Single source of truth' },
+    { text: "HR data lives in 6 different legacy systems - nothing talks to each other",             modules: ['ec', 'wfa'],              impact: 'Single source of truth' },
     { text: "We pay overtime we could avoid if we could see workforce availability",                 modules: ['time', 'wfa'],            impact: 'Overtime spend cut' },
-    { text: "Onboarding a new operator takes 6 weeks — it should take 2",                            modules: ['onb', 'learn'],           impact: 'Faster ramp-up' },
+    { text: "Onboarding a new operator takes 6 weeks - it should take 2",                            modules: ['onb', 'learn'],           impact: 'Faster ramp-up' },
     { text: "Union compliance reporting takes our team 3 days every month",                          modules: ['ec', 'wfa', 'ecp'],       impact: 'Reporting on demand' },
     { text: "We recruit externally for roles that existing workers could fill with upskilling",      modules: ['skills', 'learn', 'succ'], impact: 'Internal talent reuse' },
     { text: "Absenteeism patterns are invisible until they become a crisis",                         modules: ['wfa', 'time'],            impact: 'Absence intelligence' },
@@ -1611,10 +1611,10 @@ const PAIN_POINTS = {
   ],
   healthcare: [
     { text: "Nurse credentialing and license renewals fall through the cracks",                      modules: ['learn', 'ec'],            impact: 'Zero lapsed licences' },
-    { text: "Agency staff costs are 40% of our labour budget — how do we reduce this?",              modules: ['wfa', 'time'],            impact: 'Agency spend control' },
+    { text: "Agency staff costs are 40% of our labour budget - how do we reduce this?",              modules: ['wfa', 'time'],            impact: 'Agency spend control' },
     { text: "Burnout and turnover among clinical staff is at an all-time high",                      modules: ['perf', 'succ'],           impact: 'Retention uplift' },
     { text: "Our HR system can't handle the complexity of job families and pay bands",               modules: ['ec', 'comp'],             impact: 'Pay band integrity' },
-    { text: "Mandatory training compliance is tracked on paper — we can't audit it",                 modules: ['learn'],                  impact: 'Audit-ready training' },
+    { text: "Mandatory training compliance is tracked on paper - we can't audit it",                 modules: ['learn'],                  impact: 'Audit-ready training' },
     { text: "We have no visibility into future staffing needs by department",                        modules: ['wfa'],                    impact: 'Predictive staffing' },
     { text: "Onboarding new clinicians takes too long and delays patient care",                      modules: ['onb', 'learn'],           impact: 'Faster credentialing' },
     { text: "We can't do fair and consistent performance reviews across 12 sites",                   modules: ['perf'],                   impact: 'Calibrated reviews' },
@@ -1629,15 +1629,15 @@ const PAIN_POINTS = {
     { text: "We have no global view of our workforce across 30 countries",                           modules: ['ec', 'wfa'],              impact: 'Global HR view' },
     { text: "Diversity and pay equity reporting is a manual quarterly nightmare",                    modules: ['comp', 'wfa'],            impact: 'Continuous DEI insight' },
     { text: "Our talent pipeline for leadership roles is empty",                                     modules: ['succ', 'skills'],         impact: 'Leadership pipeline' },
-    { text: "Onboarding in regulated roles takes 3 months — can we compress this?",                  modules: ['onb', 'learn'],           impact: 'Compliant fast-onboard' },
+    { text: "Onboarding in regulated roles takes 3 months - can we compress this?",                  modules: ['onb', 'learn'],           impact: 'Compliant fast-onboard' },
     { text: "Performance review calibration across business units is inconsistent",                  modules: ['perf'],                   impact: 'Cross-BU calibration' },
     { text: "We can't track whether mandatory compliance training has been completed globally",      modules: ['learn'],                  impact: 'Global compliance assurance' },
-    { text: "Our internal job mobility is poor — top talent stagnates or leaves",                    modules: ['skills', 'succ'],         impact: 'Internal mobility' },
+    { text: "Our internal job mobility is poor - top talent stagnates or leaves",                    modules: ['skills', 'succ'],         impact: 'Internal mobility' },
     { text: "Payroll errors in multiple countries create audit findings and remediation cost",       modules: ['ecp'],                    impact: 'Multi-country payroll accuracy' },
     { text: "We hire for skills we already have internally but can't see",                           modules: ['skills', 'wfa'],          impact: 'Skills visibility' }
   ],
   retail: [
-    { text: "We hire 10,000 seasonal workers every Christmas — it's chaos",                          modules: ['rec', 'onb'],             impact: 'Volume hiring control' },
+    { text: "We hire 10,000 seasonal workers every Christmas - it's chaos",                          modules: ['rec', 'onb'],             impact: 'Volume hiring control' },
     { text: "Store manager turnover is destroying our customer experience",                          modules: ['perf', 'succ'],           impact: 'Manager retention' },
     { text: "We can't track training completion across 800 stores",                                  modules: ['learn'],                  impact: 'Centralised compliance' },
     { text: "Our HR team spends 60% of time on admin, not people strategy",                          modules: ['ec', 'ecp'],              impact: 'Admin to strategy shift' },
@@ -1645,12 +1645,12 @@ const PAIN_POINTS = {
     { text: "Pay equity issues are emerging and we don't have data to respond",                      modules: ['comp', 'wfa'],            impact: 'Pay equity defensible' },
     { text: "Scheduling compliance for part-time workers is a legal risk",                           modules: ['time', 'ec'],             impact: 'Predictive scheduling' },
     { text: "We promote people into management roles without a development path",                    modules: ['succ', 'skills', 'learn'], impact: 'Manager development' },
-    { text: "Our employer brand is weak — candidates choose competitors over us",                   modules: ['rec'],                    impact: 'Employer brand & CX' },
+    { text: "Our employer brand is weak - candidates choose competitors over us",                   modules: ['rec'],                    impact: 'Employer brand & CX' },
     { text: "Zero-hours and variable-pay workers create constant payroll complexity",               modules: ['ecp', 'time'],            impact: 'Variable pay accuracy' },
     { text: "We can't see which departments have engagement or retention problems in real time",    modules: ['wfa', 'perf'],            impact: 'Engagement intelligence' }
   ],
   energy: [
-    { text: "Our workforce is ageing — 30% retire in the next 5 years",                              modules: ['succ', 'wfa'],            impact: 'Retirement risk plan' },
+    { text: "Our workforce is ageing - 30% retire in the next 5 years",                              modules: ['succ', 'wfa'],            impact: 'Retirement risk plan' },
     { text: "Safety certification tracking for field crews is a spreadsheet disaster",               modules: ['learn'],                  impact: 'Field safety audit-ready' },
     { text: "We can't identify internal talent before we post externally",                           modules: ['skills', 'succ'],         impact: 'Internal-first hiring' },
     { text: "Knowledge transfer from retiring engineers is unstructured",                            modules: ['succ', 'learn'],          impact: 'Knowledge capture' },
@@ -1663,7 +1663,7 @@ const PAIN_POINTS = {
     { text: "We have no consistent way to assess technical competencies for field roles",           modules: ['perf', 'learn'],          impact: 'Technical competency framework' }
   ],
   construction: [
-    { text: "Every project needs different skills — we can't see availability",                      modules: ['skills', 'wfa'],          impact: 'Skills marketplace' },
+    { text: "Every project needs different skills - we can't see availability",                      modules: ['skills', 'wfa'],          impact: 'Skills marketplace' },
     { text: "CSCS card and certification tracking is done on clipboards",                            modules: ['learn'],                  impact: 'Site-ready compliance' },
     { text: "Subcontractors and employees are managed on totally different systems",                 modules: ['ec'],                     impact: 'Unified total workforce' },
     { text: "Mobilising a project team of 200 takes 8 weeks",                                        modules: ['onb', 'skills'],          impact: 'Faster mobilisation' },
@@ -1671,7 +1671,7 @@ const PAIN_POINTS = {
     { text: "Our succession plan for site directors is non-existent",                                modules: ['succ'],                   impact: 'Site-leader pipeline' },
     { text: "Payroll errors for multi-rate workers cause disputes weekly",                           modules: ['ecp', 'time'],            impact: 'Multi-rate pay accuracy' },
     { text: "Remote site workers have no access to HR self-service",                                 modules: ['ec'],                     impact: 'Mobile self-service' },
-    { text: "Hiring skilled tradespeople takes far too long — projects slip as a result",           modules: ['rec'],                    impact: 'Trades hiring velocity' },
+    { text: "Hiring skilled tradespeople takes far too long - projects slip as a result",           modules: ['rec'],                    impact: 'Trades hiring velocity' },
     { text: "We can't track working hours accurately across multiple sites and shifts",             modules: ['time', 'ecp'],            impact: 'Multi-site time accuracy' },
     { text: "There's no way for workers to flag safety concerns digitally in real time",            modules: ['ec', 'learn'],            impact: 'Safety digital channel' }
   ],
@@ -1696,13 +1696,13 @@ const PAIN_POINTS = {
     { text: "Onboarding new staff during term-start peaks overwhelms HR",                            modules: ['onb', 'rec'],             impact: 'Term-start scaling' },
     { text: "No view of which roles are hard to fill or retain",                                     modules: ['wfa', 'rec'],             impact: 'Hiring pain insights' },
     { text: "Training compliance for safeguarding is tracked on spreadsheets",                       modules: ['learn'],                  impact: 'Safeguarding compliance' },
-    { text: "Our pay grades are out of market — we have no benchmarking data",                       modules: ['comp'],                   impact: 'Market pay alignment' },
+    { text: "Our pay grades are out of market - we have no benchmarking data",                       modules: ['comp'],                   impact: 'Market pay alignment' },
     { text: "Substitute and supply staff management is completely manual",                          modules: ['time', 'ec'],             impact: 'Supply staff management' },
     { text: "We struggle to attract early-career candidates to the public sector",                  modules: ['rec'],                    impact: 'Employer brand' },
     { text: "Staff CPD (continuing professional development) is tracked individually, not centrally", modules: ['learn', 'perf'],        impact: 'CPD visibility' }
   ],
   pharma: [
-    { text: "GxP training compliance is audited externally — our records aren't audit-ready",        modules: ['learn'],                  impact: 'GxP audit confidence' },
+    { text: "GxP training compliance is audited externally - our records aren't audit-ready",        modules: ['learn'],                  impact: 'GxP audit confidence' },
     { text: "Clinical trial staffing across multiple countries is uncoordinated",                    modules: ['wfa', 'ec'],              impact: 'Trial workforce control' },
     { text: "We can't track global mobility assignments and cost in one place",                      modules: ['ec', 'comp'],             impact: 'Mobility transparency' },
     { text: "Our talent pipeline for scientist roles is thin",                                       modules: ['succ', 'skills', 'rec'],  impact: 'Scientific pipeline' },
@@ -1711,16 +1711,16 @@ const PAIN_POINTS = {
     { text: "Performance calibration for R&D vs commercial teams is inconsistent",                   modules: ['perf'],                   impact: 'Function-aware calibration' },
     { text: "Regulatory submissions require workforce data in formats we can't generate",            modules: ['wfa', 'ec'],              impact: 'Submission-ready data' },
     { text: "We can't see which scientists are available for new projects without emailing around",  modules: ['skills', 'wfa'],          impact: 'Resource availability' },
-    { text: "Hiring for highly specialised roles takes 6–12 months — pipelines are always dry",     modules: ['rec', 'succ'],            impact: 'Specialised talent pipeline' },
-    { text: "Different countries have different HR processes — harmonisation seems impossible",      modules: ['ec'],                     impact: 'Global HR harmonisation' }
+    { text: "Hiring for highly specialised roles takes 6–12 months - pipelines are always dry",     modules: ['rec', 'succ'],            impact: 'Specialised talent pipeline' },
+    { text: "Different countries have different HR processes - harmonisation seems impossible",      modules: ['ec'],                     impact: 'Global HR harmonisation' }
   ],
   tech: [
-    { text: "We scaled from 200 to 2,000 employees in 2 years — HR never caught up",                 modules: ['ec', 'wfa'],              impact: 'Scaled HR foundation' },
+    { text: "We scaled from 200 to 2,000 employees in 2 years - HR never caught up",                 modules: ['ec', 'wfa'],              impact: 'Scaled HR foundation' },
     { text: "Equity comp planning is disconnected from total compensation",                          modules: ['comp'],                   impact: 'Total rewards view' },
     { text: "Remote-first hiring means we need global payroll in 20+ countries",                     modules: ['ecp'],                    impact: 'Global payroll' },
-    { text: "We have no skills inventory — we're flying blind on internal mobility",                 modules: ['skills', 'succ'],         impact: 'Live skills graph' },
-    { text: "Performance reviews feel performative — engagement scores are falling",                 modules: ['perf'],                   impact: 'Continuous performance' },
-    { text: "Onboarding is inconsistent — some teams do it well, most don't",                        modules: ['onb'],                    impact: 'Standardised onboarding' },
+    { text: "We have no skills inventory - we're flying blind on internal mobility",                 modules: ['skills', 'succ'],         impact: 'Live skills graph' },
+    { text: "Performance reviews feel performative - engagement scores are falling",                 modules: ['perf'],                   impact: 'Continuous performance' },
+    { text: "Onboarding is inconsistent - some teams do it well, most don't",                        modules: ['onb'],                    impact: 'Standardised onboarding' },
     { text: "We can't benchmark compensation against market without a data nightmare",               modules: ['comp'],                   impact: 'Market-ready comp' },
     { text: "Our high-performers have no visible internal career path",                              modules: ['succ', 'skills'],         impact: 'Visible career paths' },
     { text: "Manager quality is inconsistent and we have no data to coach or develop them",         modules: ['perf', 'learn'],          impact: 'Manager effectiveness' },
@@ -1731,11 +1731,11 @@ const PAIN_POINTS = {
     { text: "Multi-property management means HR data is siloed by location",                         modules: ['ec', 'wfa'],              impact: 'Cross-property HR view' },
     { text: "Seasonal hiring peaks overwhelm our HR team every summer",                              modules: ['rec', 'onb'],             impact: 'Seasonal scaling' },
     { text: "Guest-facing training compliance across 50 hotels isn't tracked centrally",             modules: ['learn'],                  impact: 'Brand training assurance' },
-    { text: "Turnover is 80% annually — we don't understand why",                                    modules: ['wfa', 'perf'],            impact: 'Attrition diagnostics' },
+    { text: "Turnover is 80% annually - we don't understand why",                                    modules: ['wfa', 'perf'],            impact: 'Attrition diagnostics' },
     { text: "Tips and variable pay aren't handled well by our current system",                       modules: ['ecp', 'comp'],            impact: 'Variable pay accuracy' },
     { text: "No visibility into high-potential team members for promotion",                          modules: ['succ', 'skills'],         impact: 'Hi-po visibility' },
     { text: "Health and safety certification for kitchen staff is paper-based",                      modules: ['learn'],                  impact: 'Kitchen safety compliance' },
-    { text: "Scheduling and HR don't connect — payroll errors are weekly",                           modules: ['time', 'ecp'],            impact: 'Schedule-pay integration' },
+    { text: "Scheduling and HR don't connect - payroll errors are weekly",                           modules: ['time', 'ecp'],            impact: 'Schedule-pay integration' },
     { text: "We're struggling to attract service talent back post-pandemic",                        modules: ['rec'],                    impact: 'Talent attraction recovery' },
     { text: "New property openings take 3 months to get HR processes running",                      modules: ['onb', 'ec'],              impact: 'Property launch speed' },
     { text: "Language barriers in a multilingual workforce mean compliance training gaps",           modules: ['learn'],                  impact: 'Multilingual compliance' }
@@ -1748,7 +1748,7 @@ const PAIN_POINTS = {
     { text: "We can't benchmark compensation against competitor firms",                              modules: ['comp'],                   impact: 'Competitive comp' },
     { text: "Promotion decisions are inconsistent across practice areas",                            modules: ['perf', 'succ'],           impact: 'Calibrated promotions' },
     { text: "Managing partners across multiple countries with different rules is manual",            modules: ['ec', 'ecp'],              impact: 'Partner admin automation' },
-    { text: "We have no talent marketplace — internal mobility is invisible",                        modules: ['skills', 'succ'],         impact: 'Internal talent marketplace' },
+    { text: "We have no talent marketplace - internal mobility is invisible",                        modules: ['skills', 'succ'],         impact: 'Internal talent marketplace' },
     { text: "Recruiting top-tier talent is slow and candidate experience is poor",                  modules: ['rec'],                    impact: 'Premium candidate experience' },
     { text: "Project staffing decisions are based on who is known, not who is best",               modules: ['skills', 'wfa'],          impact: 'Skills-based staffing' },
     { text: "We can't track learning investment per consultant or practice area",                   modules: ['learn', 'wfa'],           impact: 'Learning ROI visibility' },
@@ -1902,7 +1902,7 @@ function restoreFromHash() {
 }
 
 /* ============================================================
-   SCREEN 1 — render industry grid
+   SCREEN 1 - render industry grid
    ============================================================ */
 function renderIndustries() {
   const grid = document.getElementById('industryGrid');
@@ -1926,12 +1926,12 @@ function renderIndustries() {
 }
 
 /* ============================================================
-   SCREEN 2 — render pain points
+   SCREEN 2 - render pain points
    ============================================================ */
 function renderPainPoints() {
   const ind = INDUSTRIES.find(i => i.id === state.industry);
   document.getElementById('painHeader').textContent =
-    `${ind.name} — what keeps your HR team up at night?`;
+    `${ind.name} - what keeps your HR team up at night?`;
 
   const grid = document.getElementById('painGrid');
   const points = PAIN_POINTS[state.industry] || [];
@@ -1974,7 +1974,7 @@ function updateCtaBar() {
 }
 
 /* ============================================================
-   SCREEN 3 — compute + render results
+   SCREEN 3 - compute + render results
    ============================================================ */
 function getSelectedPainObjects() {
   const points = PAIN_POINTS[state.industry] || [];
@@ -2179,9 +2179,9 @@ function generateQuickWins(ranked, ind) {
   const m2 = ranked[1] ? MODULES[ranked[1].key] : null;
   const m3 = ranked[2] ? MODULES[ranked[2].key] : null;
   const wins = [];
-  wins.push(`Lead with <strong>${m1.short}</strong> in your first wave — addresses ${ranked[0].count} of your top concerns.`);
+  wins.push(`Lead with <strong>${m1.short}</strong> in your first wave - addresses ${ranked[0].count} of your top concerns.`);
   if (m2) wins.push(`Pair with <strong>${m2.short}</strong> for fast compounding value across ${ranked[1].count} more pain points.`);
-  if (m3) wins.push(`<strong>${m3.short}</strong> rounds out wave one — covers ${ranked[2].count} additional issues with limited dependency.`);
+  if (m3) wins.push(`<strong>${m3.short}</strong> rounds out wave one - covers ${ranked[2].count} additional issues with limited dependency.`);
   if (!m2) wins.push('Run a focused MVP on a single business unit before scaling.');
   if (!m3) wins.push('Layer Workforce Analytics in wave two to measure outcomes.');
   return wins;
@@ -2192,7 +2192,7 @@ function renderMappingTable() {
   let rows = [];
   selected.forEach(p => {
     p.modules.forEach((mKey, i) => {
-      if (i > 0) return; // primary mapping only — keep table tight
+      if (i > 0) return; // primary mapping only - keep table tight
       rows.push({
         pain: p.text,
         module: MODULES[mKey].name,
@@ -2595,7 +2595,7 @@ renderIndustries();
 restoreFromHash();
 </script>
 <div style="text-align:center;padding:12px 20px;background:var(--bg-glass);border-top:1px solid var(--border-glass);margin-top:20px;font-size:13px;color:var(--text-muted)">
-  ⚙️ <b>Ready to implement?</b> Check feasibility & steps at 
+  ⚙️ <b>Ready to implement?</b> Check feasibility & steps at
   <a href="https://sahirvhora.github.io/sf-compass/" style="color:var(--primary);font-weight:600">SF Compass →</a>
 </div>
 </body>
