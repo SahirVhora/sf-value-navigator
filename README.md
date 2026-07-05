@@ -8,7 +8,7 @@ Built for HR leaders, transformation consultants, and pre-sales teams who need t
 
 ## What it does
 
-1. **Pick your industry** - choose from 12 sectors, each pre-loaded with the eight pain points HR leaders in that space raise most often
+1. **Pick your industry** - choose from 12 sectors, each pre-loaded with 11-12 pain points HR leaders in that space raise most often
 2. **Select your pain points** - tick every challenge that resonates; the more you select, the more precise the output
 3. **Get your roadmap** - instantly receive a priority-ranked list of SF modules mapped directly to your selected pain points
 4. **Build the value case** - adjust planning assumptions such as employees, countries, HR FTE, annual hires, data maturity, and process complexity
